@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>सिक्योर पीडीएफ प्रो - आधुनिक सुरक्षा</title>
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <style>
+        /* --- Global Styles & Fonts --- */
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --success-color: #00b09b;
+            --error-color: #f44336;
+            --text-color: #333;
+            --bg-color: #f0f2f5;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', 'Nirmala UI', sans-serif;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        /* --- Main Container with Glassmorphism --- */
+        .main-container {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(12px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 40px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- Card Content --- */
+        .card {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+            font-size: 2rem;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 25px;
+            font-size: 0.95rem;
+        }
+
+        /* --- Input & Button Styling --- */
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+            position: relative;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        input[type="file"], input[type="password"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.3s ease;
+        }
+        input[type="file"]:focus, input[type="password"]:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .action-button {
+            width: 100%;
+            padding: 14px 20px;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .action-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .action-button:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* --- Status, Loader & Success Icon --- */
+        .status-container {
+            margin-top: 25px;
+            min-height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        #status-message {
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+        .error { color: var(--error-color); }
+        .success { color: var(--success-color); }
+
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            display: none; /* Hidden by default */
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .success-icon {
+            width: 50px;
+            height: 50px;
+            display: none; /* Hidden by default */
+        }
+        .success-icon svg {
+            width: 100%;
+            height: 100%;
+            fill: var(--success-color);
+            animation: drawCheck 0.5s ease-out forwards;
+        }
+        @keyframes drawCheck {
+            from { stroke-dashoffset: 100; }
+            to { stroke-dashoffset: 0; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="main-container">
+        <div class="card">
+            <h1>सिक्योर पीडीएफ प्रो</h1>
+            <p class="subtitle">अपनी पीडीएफ फाइल को एक मजबूत पासवर्ड के साथ सुरक्षित करें। 100% सुरक्षित और निजी।</p>
+
+            <div class="input-group">
+                <label for="file-picker">📄 पीडीएफ फाइल चुनें:</label>
+                <input type="file" id="file-picker" accept=".pdf">
+            </div>
+
+            <div class="input-group">
+                <label for="password">🔒 नया पासवर्ड सेट करें:</label>
+                <input type="password" id="password" placeholder="एक मजबूत पासवर्ड डालें">
+            </div>
+
+            <button id="protect-button" class="action-button">पीडीएफ को सुरक्षित करें और डाउनलोड करें</button>
+
+            <div class="status-container">
+                <div id="loader" class="loader"></div>
+                <div id="success-icon" class="success-icon">
+                    <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                </div>
+                <p id="status-message"></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { PDFDocument } = PDFLib;
+        const filePicker = document.getElementById('file-picker');
+        const passwordInput = document.getElementById('password');
+        const protectButton = document.getElementById('protect-button');
+        const statusMessage = document.getElementById('status-message');
+        const loader = document.getElementById('loader');
+        const successIcon = document.getElementById('success-icon');
+
+        function showState(state) {
+            // Reset all states first
+            protectButton.style.display = 'block';
+            loader.style.display = 'none';
+            successIcon.style.display = 'none';
+            statusMessage.textContent = '';
+            statusMessage.className = '';
+            protectButton.disabled = false;
+
+            switch(state) {
+                case 'processing':
+                    protectButton.style.display = 'none';
+                    loader.style.display = 'block';
+                    statusMessage.textContent = 'प्रोसेसिंग हो रही है... कृपया प्रतीक्षा करें।';
+                    break;
+                case 'success':
+                    successIcon.style.display = 'block';
+                    statusMessage.textContent = 'सफलता! आपकी सुरक्षित पीडीएफ डाउनलोड हो गई है।';
+                    statusMessage.className = 'success';
+                    break;
+                case 'error':
+                    statusMessage.className = 'error';
+                    break;
+            }
+        }
+
+        protectButton.addEventListener('click', async () => {
+            const file = filePicker.files[0];
+            const password = passwordInput.value;
+
+            if (!file || !password) {
+                statusMessage.textContent = 'कृपया एक फाइल और पासवर्ड दोनों चुनें।';
+                statusMessage.className = 'error';
+                return;
+            }
+
+            showState('processing');
+
+            try {
+                const existingPdfBytes = await file.arrayBuffer();
+                const pdfDoc = await PDFDocument.load(existingPdfBytes);
+                
+                const pdfBytes = await pdfDoc.save({
+                    useObjectStreams: false,
+                    updateFieldAppearances: false,
+                    encrypt: {
+                        userPassword: password,
+                        ownerPassword: password,
+                        permissions: {
+                            printing: 'highResolution',
+                            modifying: false,
+                            copying: false,
+                            annotating: false,
+                            fillingForms: false,
+                        }
+                    }
+                });
+
+                const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+                const url = URL.createObjectURL(blob);
+                
+                // Robust download logic
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = `protected-${file.name}`;
+                document.body.appendChild(a);
+                a.click();
+                
+                // Clean up
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+
+                showState('success');
+
+            } catch (err) {
+                console.error(err);
+                statusMessage.textContent = 'एक त्रुटि हुई: ' + err.message;
+                showState('error');
+            }
+        });
+    </script>
+
+</body>
+</html>
