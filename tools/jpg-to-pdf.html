@@ -76,7 +76,6 @@
             position: relative;
             user-select: none;
             -webkit-user-select: none;
-            touch-action: none;
         }
         
         .image-item:hover {
@@ -90,46 +89,9 @@
             z-index: 1000;
         }
         
-        .image-item.long-press {
-            animation: pulse 1s infinite;
-        }
-        
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-        
         .sortable-ghost {
             opacity: 0.4;
             background: var(--primary);
-        }
-        
-        .drag-handle {
-            position: absolute;
-            top: 5px;
-            left: 5px;
-            background: var(--primary);
-            color: white;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: grab;
-            z-index: 10;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        
-        .image-item:hover .drag-handle,
-        .drag-handle.active {
-            opacity: 1;
-        }
-        
-        .drag-handle:active {
-            cursor: grabbing;
         }
         
         .btn-primary {
@@ -254,15 +216,6 @@
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .slide-in {
-            animation: slideIn 0.3s ease-out;
-        }
-        
-        @keyframes slideIn {
-            from { transform: translateX(-100%); }
-            to { transform: translateX(0); }
         }
         
         .custom-scrollbar::-webkit-scrollbar {
@@ -494,14 +447,9 @@
             background: var(--primary);
         }
         
-        .file-input-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            opacity: 0;
-            cursor: pointer;
+        .reorder-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
         
         @media (max-width: 768px) {
@@ -548,15 +496,14 @@
                     <h2 class="text-xl font-semibold mb-4 text-white">
                         <i class="fas fa-upload mr-2"></i>Upload Images
                     </h2>
-                    <div id="dropZone" class="drop-zone p-8 text-center rounded-lg cursor-pointer">
+                    <div id="dropZone" class="drop-zone p-8 text-center rounded-lg">
                         <i class="fas fa-cloud-upload-alt text-4xl text-white mb-4"></i>
                         <p class="text-white mb-2">Drag & drop your images here</p>
                         <p class="text-white/70 text-sm mb-4">or</p>
-                        <button class="btn-secondary" id="browseButton">
+                        <button class="btn-secondary" onclick="document.getElementById('fileInput').click()">
                             <i class="fas fa-folder-open mr-2"></i>Browse Files
                         </button>
-                        <input type="file" id="fileInput" accept="image/*" multiple class="hidden">
-                        <div class="file-input-overlay"></div>
+                        <input type="file" id="fileInput" accept="image/*" multiple style="display: none;">
                         <p class="text-white/60 text-xs mt-4">Supports JPG, PNG, GIF, BMP</p>
                     </div>
                 </section>
@@ -787,10 +734,6 @@
         let cropCanvas = null;
         let cropCtx = null;
         let cropImage = null;
-        let draggedElement = null;
-        let touchOffset = { x: 0, y: 0 };
-        let longPressTimer = null;
-        let isLongPress = false;
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
@@ -804,25 +747,16 @@
             // Theme toggle
             document.getElementById('themeToggle').addEventListener('click', toggleTheme);
             
-            // File upload - Fixed for mobile
+            // File upload - Simplified
             const dropZone = document.getElementById('dropZone');
             const fileInput = document.getElementById('fileInput');
-            const browseButton = document.getElementById('browseButton');
-            const fileInputOverlay = document.querySelector('.file-input-overlay');
             
-            browseButton.addEventListener('click', () => fileInput.click());
-            fileInputOverlay.addEventListener('click', () => fileInput.click());
             fileInput.addEventListener('change', handleFileSelect);
             
             // Drag and drop
             dropZone.addEventListener('dragover', handleDragOver);
             dropZone.addEventListener('dragleave', handleDragLeave);
             dropZone.addEventListener('drop', handleDrop);
-            
-            // Touch events for mobile - Fixed
-            dropZone.addEventListener('touchstart', handleTouchStart, { passive: false });
-            dropZone.addEventListener('touchmove', handleTouchMove, { passive: false });
-            dropZone.addEventListener('touchend', handleTouchEnd);
             
             // Settings
             document.getElementById('margin').addEventListener('input', updateMarginValue);
@@ -878,37 +812,6 @@
             processFiles(files);
         }
 
-        // Touch events for mobile - Fixed
-        function handleTouchStart(e) {
-            e.preventDefault();
-            const touch = e.touches[0];
-            const mouseEvent = new MouseEvent('dragover', {
-                clientX: touch.clientX,
-                clientY: touch.clientY
-            });
-            e.currentTarget.dispatchEvent(mouseEvent);
-        }
-
-        function handleTouchMove(e) {
-            e.preventDefault();
-            const touch = e.touches[0];
-            const mouseEvent = new MouseEvent('dragover', {
-                clientX: touch.clientX,
-                clientY: touch.clientY
-            });
-            e.currentTarget.dispatchEvent(mouseEvent);
-        }
-
-        function handleTouchEnd(e) {
-            e.preventDefault();
-            const touch = e.changedTouches[0];
-            const mouseEvent = new MouseEvent('drop', {
-                clientX: touch.clientX,
-                clientY: touch.clientY
-            });
-            e.currentTarget.dispatchEvent(mouseEvent);
-        }
-
         function processFiles(files) {
             const imageFiles = files.filter(file => file.type.startsWith('image/'));
             
@@ -961,9 +864,6 @@
             
             imageList.innerHTML = uploadedImages.map((img, index) => `
                 <div class="image-item glass p-2 relative group" data-id="${img.id}" data-index="${index}">
-                    <div class="drag-handle">
-                        <i class="fas fa-grip-vertical"></i>
-                    </div>
                     <img src="${img.src}" alt="${img.name}" class="w-full h-32 object-cover rounded">
                     ${img.edited ? '<div class="edited-badge"><i class="fas fa-edit"></i> Edited</div>' : ''}
                     <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded flex items-center justify-center gap-2">
@@ -989,8 +889,10 @@
                 </div>
             `).join('');
             
-            // Initialize drag functionality
-            initializeDrag();
+            // Reinitialize sortable after DOM update
+            setTimeout(() => {
+                initializeSortable();
+            }, 100);
         }
 
         function removeImage(id) {
@@ -1018,115 +920,29 @@
             saveToLocalStorage();
         }
 
-        // Drag functionality - Fixed for PC
-        function initializeDrag() {
-            const imageList = document.getElementById('imageList');
-            
-            // Initialize Sortable for PC drag functionality
-            new Sortable(imageList, {
-                animation: 150,
-                ghostClass: 'sortable-ghost',
-                handle: '.drag-handle',
-                onEnd: function(evt) {
-                    const items = Array.from(imageList.children);
-                    const newOrder = items.map(item => {
-                        const index = parseInt(item.getAttribute('data-index'));
-                        return uploadedImages[index];
-                    });
-                    uploadedImages = newOrder;
-                    saveToLocalStorage();
-                }
-            });
-            
-            // Mobile drag functionality
-            const imageItems = document.querySelectorAll('.image-item');
-            const dragHandles = document.querySelectorAll('.drag-handle');
-            
-            // Touch events for drag handles
-            dragHandles.forEach(handle => {
-                handle.addEventListener('touchstart', handleTouchDragStart, { passive: false });
-            });
-            
-            // Global touch events
-            document.addEventListener('touchmove', handleTouchDragMove, { passive: false });
-            document.addEventListener('touchend', handleTouchDragEnd);
-        }
-
-        function handleTouchDragStart(e) {
-            if (e.target.closest('button')) return;
-            
-            e.preventDefault();
-            
-            draggedElement = e.currentTarget.closest('.image-item');
-            
-            // Start long press timer
-            longPressTimer = setTimeout(() => {
-                isLongPress = true;
-                draggedElement.classList.add('long-press');
-                
-                // Vibrate if available
-                if (navigator.vibrate) {
-                    navigator.vibrate(50);
-                }
-            }, 500);
-        }
-
-        function handleTouchDragMove(e) {
-            if (!draggedElement) return;
-            
-            e.preventDefault();
-            
-            // If it's a long press, allow dragging
-            if (isLongPress) {
-                const touch = e.touches[0];
-                const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
-                
-                if (elementBelow && elementBelow.classList.contains('image-item') && elementBelow !== draggedElement) {
-                    swapElements(draggedElement, elementBelow);
-                }
-            }
-        }
-
-        function handleTouchDragEnd(e) {
-            if (!draggedElement) return;
-            
-            // Clear long press timer
-            clearTimeout(longPressTimer);
-            
-            // If it was a long press, update the order
-            if (isLongPress) {
-                updateImageOrder();
-            }
-            
-            draggedElement.classList.remove('long-press');
-            draggedElement = null;
-            isLongPress = false;
-        }
-
-        function swapElements(elem1, elem2) {
-            const parent = elem1.parentNode;
-            const sibling = elem1.nextSibling === elem2 ? elem1 : elem1.nextSibling;
-            
-            parent.insertBefore(elem1, elem2);
-            parent.insertBefore(elem2, sibling);
-        }
-
-        function updateImageOrder() {
-            const imageItems = document.querySelectorAll('.image-item');
-            const newOrder = [];
-            
-            imageItems.forEach(item => {
-                const index = parseInt(item.getAttribute('data-index'));
-                newOrder.push(uploadedImages[index]);
-            });
-            
-            uploadedImages = newOrder;
-            saveToLocalStorage();
-        }
-
-        // Sortable initialization for desktop - Fixed
+        // Sortable initialization for PC - Simplified
         function initializeSortable() {
-            // This is now handled in initializeDrag function
+            const imageList = document.getElementById('imageList');
+            if (imageList.children.length > 0) {
+                try {
+                    new Sortable(imageList, {
+                        animation: 150,
+                        ghostClass: 'sortable-ghost',
+                        handle: '.image-item',
+                        onEnd: function(evt) {
+                            const items = Array.from(imageList.children);
+                            const newOrder = items.map(item => {
+                                const index = parseInt(item.getAttribute('data-index'));
+                                return uploadedImages[index];
+                            });
+                            uploadedImages = newOrder;
+                            saveToLocalStorage();
+                        }
+                    });
+                } catch (error) {
+                    console.log('Sortable initialization error:', error);
+                }
+            }
         }
 
         // Rotate functionality
@@ -1203,7 +1019,7 @@
             closeRotationModal();
         }
 
-        // Crop functionality - completely rewritten with canvas
+        // Crop functionality
         function openCropModal(index) {
             currentEditingImage = index;
             const img = uploadedImages[index];
@@ -1258,11 +1074,8 @@
             // Clean up event listeners
             if (cropCanvas) {
                 cropCanvas.removeEventListener('mousedown', startCrop);
-                cropCanvas.removeEventListener('touchstart', startCropTouch);
                 document.removeEventListener('mousemove', updateCrop);
-                document.removeEventListener('touchmove', updateCropTouch);
                 document.removeEventListener('mouseup', endCrop);
-                document.removeEventListener('touchend', endCrop);
             }
             
             // Reset crop box
@@ -1276,19 +1089,15 @@
             cropBox.style.display = 'none';
             cropData = null;
             
-            // Add event listeners for both mouse and touch
+            // Add event listeners
             cropCanvas.addEventListener('mousedown', startCrop);
-            cropCanvas.addEventListener('touchstart', startCropTouch, { passive: false });
             document.addEventListener('mousemove', updateCrop);
-            document.addEventListener('touchmove', updateCropTouch, { passive: false });
             document.addEventListener('mouseup', endCrop);
-            document.addEventListener('touchend', endCrop);
             
             // Add event listeners to crop handles
             const cropHandles = document.querySelectorAll('.crop-handle');
             cropHandles.forEach(handle => {
                 handle.addEventListener('mousedown', startCropResize);
-                handle.addEventListener('touchstart', startCropResizeTouch, { passive: false });
             });
         }
 
@@ -1307,22 +1116,6 @@
             updateCropBox();
         }
 
-        function startCropTouch(e) {
-            e.preventDefault();
-            const touch = e.touches[0];
-            const rect = cropCanvas.getBoundingClientRect();
-            
-            cropData = {
-                startX: touch.clientX - rect.left,
-                startY: touch.clientY - rect.top,
-                endX: touch.clientX - rect.left,
-                endY: touch.clientY - rect.top
-            };
-            
-            isDragging = true;
-            updateCropBox();
-        }
-
         function updateCrop(e) {
             if (!isDragging && !isResizing) return;
             
@@ -1335,56 +1128,6 @@
                 // Handle resize based on which handle is being dragged
                 const x = e.clientX - rect.left;
                 const y = e.clientY - rect.top;
-                
-                switch (resizeHandle) {
-                    case 'nw':
-                        cropData.startX = x;
-                        cropData.startY = y;
-                        break;
-                    case 'ne':
-                        cropData.endX = x;
-                        cropData.startY = y;
-                        break;
-                    case 'sw':
-                        cropData.startX = x;
-                        cropData.endY = y;
-                        break;
-                    case 'se':
-                        cropData.endX = x;
-                        cropData.endY = y;
-                        break;
-                    case 'n':
-                        cropData.startY = y;
-                        break;
-                    case 's':
-                        cropData.endY = y;
-                        break;
-                    case 'w':
-                        cropData.startX = x;
-                        break;
-                    case 'e':
-                        cropData.endX = x;
-                        break;
-                }
-            }
-            
-            updateCropBox();
-        }
-
-        function updateCropTouch(e) {
-            if (!isDragging && !isResizing) return;
-            
-            e.preventDefault();
-            const touch = e.touches[0];
-            const rect = cropCanvas.getBoundingClientRect();
-            
-            if (isDragging) {
-                cropData.endX = touch.clientX - rect.left;
-                cropData.endY = touch.clientY - rect.top;
-            } else if (isResizing) {
-                // Handle resize based on which handle is being dragged
-                const x = touch.clientX - rect.left;
-                const y = touch.clientY - rect.top;
                 
                 switch (resizeHandle) {
                     case 'nw':
@@ -1445,13 +1188,6 @@
         }
 
         function startCropResize(e) {
-            e.stopPropagation();
-            const handle = e.target;
-            resizeHandle = handle.className.split(' ')[1];
-            isResizing = true;
-        }
-
-        function startCropResizeTouch(e) {
             e.stopPropagation();
             const handle = e.target;
             resizeHandle = handle.className.split(' ')[1];
