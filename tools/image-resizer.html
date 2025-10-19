@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PixelForge - Advanced Image Resizer</title>
+    <meta name="description" content="Professional browser-based image resizer with batch processing, format conversion, and real-time preview. Resize, compress, and transform your images instantly without uploading to any server.">
+    <meta name="keywords" content="image resize, image compressor, batch resize, format converter, webp, png, jpg">
+    <meta name="author" content="PixelForge">
+    
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="PixelForge - Advanced Image Resizer">
+    <meta property="og:description" content="Professional browser-based image resizer with batch processing, format conversion, and real-time preview.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="">
+    <meta property="og:image" content="">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🖼️</text></svg>">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- JSZip for batch download -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --dark-bg: #0f0f23;
+            --dark-surface: #1a1a2e;
+            --dark-border: #2a2a3e;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        
+        .dark {
+            background-color: var(--dark-bg);
+            color: #e0e0e0;
+        }
+        
+        .dark .surface {
+            background-color: var(--dark-surface);
+            border-color: var(--dark-border);
+        }
+        
+        .gradient-text {
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .gradient-bg {
+            background: var(--primary-gradient);
+        }
+        
+        .secondary-gradient-bg {
+            background: var(--secondary-gradient);
+        }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .dark .glass-effect {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .drop-zone {
+            border: 2px dashed #cbd5e0;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .drop-zone.dragover {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+            transform: scale(1.02);
+        }
+        
+        .drop-zone::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(102, 126, 234, 0.1), transparent);
+            transform: rotate(45deg);
+            transition: all 0.5s;
+            opacity: 0;
+        }
+        
+        .drop-zone.dragover::before {
+            animation: shimmer 0.5s ease-in-out;
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); opacity: 0; }
+        }
+        
+        .image-card {
+            animation: fadeInUp 0.5s ease forwards;
+            opacity: 0;
+        }
+        
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .resize-handle {
+            width: 12px;
+            height: 12px;
+            background: #667eea;
+            border: 2px solid white;
+            border-radius: 50%;
+            position: absolute;
+            cursor: nwse-resize;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            transition: transform 0.2s;
+        }
+        
+        .resize-handle:hover {
+            transform: scale(1.2);
+        }
+        
+        .grid-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                repeating-linear-gradient(0deg, rgba(0,0,0,0.1) 0px, transparent 1px, transparent 20px, rgba(0,0,0,0.1) 21px),
+                repeating-linear-gradient(90deg, rgba(0,0,0,0.1) 0px, transparent 1px, transparent 20px, rgba(0,0,0,0.1) 21px);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .grid-overlay.active {
+            opacity: 1;
+        }
+        
+        .comparison-slider {
+            position: relative;
+            overflow: hidden;
+            cursor: ew-resize;
+        }
+        
+        .comparison-slider .divider {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: white;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            cursor: ew-resize;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+        }
+        
+        .comparison-slider .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 30px;
+            height: 30px;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        
+        .comparison-slider .divider::after {
+            content: '◀ ▶';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 10px;
+            color: #333;
+            font-weight: bold;
+        }
+        
+        .comparison-slider .after {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 50%;
+            height: 100%;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+            background-size: 200% 100%;
+            animation: progress 2s linear infinite;
+            border-radius: 2px;
+        }
+        
+        @keyframes progress {
+            0% { background-position: 0% 0%; }
+            100% { background-position: 200% 0%; }
+        }
+        
+        .preset-button {
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .preset-button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.5s, height 0.5s;
+        }
+        
+        .preset-button:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+        
+        .floating-label {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .tooltip {
+            position: relative;
+        }
+        
+        .tooltip::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+            margin-bottom: 5px;
+        }
+        
+        .tooltip:hover::after {
+            opacity: 1;
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 4px;
+        }
+        
+        .dark ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Loading animation */
+        .loader {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(102, 126, 234, 0.3);
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .comparison-slider .divider {
+                width: 6px;
+            }
+            
+            .resize-handle {
+                width: 16px;
+                height: 16px;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900 transition-colors duration-300">
+    <!-- Header -->
+    <header class="sticky top-0 z-50 glass-effect shadow-lg">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 gradient-bg rounded-lg flex items-center justify-center">
+                        <i class="fas fa-image text-white"></i>
+                    </div>
+                    <h1 class="text-2xl font-bold gradient-text">PixelForge</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button id="gridToggle" class="tooltip p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition" data-tooltip="Toggle Grid">
+                        <i class="fas fa-th"></i>
+                    </button>
+                    <button id="themeToggle" class="tooltip p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition" data-tooltip="Toggle Theme">
+                        <i class="fas fa-moon dark:hidden"></i>
+                        <i class="fas fa-sun hidden dark:inline"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- Upload Section -->
+        <section class="mb-8">
+            <div id="dropZone" class="drop-zone surface bg-white dark:bg-gray-800 rounded-2xl p-12 text-center cursor-pointer hover:shadow-xl transition-all duration-300">
+                <div class="floating-label">
+                    <i class="fas fa-cloud-upload-alt text-6xl text-purple-500 mb-4"></i>
+                    <h2 class="text-2xl font-semibold mb-2">Drop your images here</h2>
+                    <p class="text-gray-600 dark:text-gray-400 mb-4">or click to browse</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-500">Supports JPG, PNG, WEBP • Max 10MB per file</p>
+                </div>
+                <input type="file" id="fileInput" multiple accept="image/*" class="hidden">
+            </div>
+        </section>
+
+        <!-- Control Panel -->
+        <section id="controlPanel" class="hidden surface bg-white dark:bg-gray-800 rounded-2xl p-6 mb-8 shadow-lg">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Resize Controls -->
+                <div class="space-y-4">
+                    <h3 class="font-semibold text-lg flex items-center">
+                        <i class="fas fa-expand-arrows-alt mr-2 text-purple-500"></i>
+                        Resize Options
+                    </h3>
+                    <div class="flex items-center space-x-2">
+                        <input type="checkbox" id="aspectRatioLock" checked class="w-4 h-4 text-purple-600 rounded">
+                        <label for="aspectRatioLock" class="text-sm">Lock Aspect Ratio</label>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="text-xs text-gray-600 dark:text-gray-400">Width (px)</label>
+                            <input type="number" id="widthInput" class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600" placeholder="Width">
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-600 dark:text-gray-400">Height (px)</label>
+                            <input type="number" id="heightInput" class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600" placeholder="Height">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-600 dark:text-gray-400">Scale (%)</label>
+                        <input type="range" id="scaleSlider" min="10" max="200" value="100" class="w-full">
+                        <div class="flex justify-between text-xs text-gray-500">
+                            <span>10%</span>
+                            <span id="scaleValue">100%</span>
+                            <span>200%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quality & Format -->
+                <div class="space-y-4">
+                    <h3 class="font-semibold text-lg flex items-center">
+                        <i class="fas fa-sliders-h mr-2 text-purple-500"></i>
+                        Quality & Format
+                    </h3>
+                    <div>
+                        <label class="text-xs text-gray-600 dark:text-gray-400">Output Format</label>
+                        <select id="formatSelect" class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600">
+                            <option value="original">Original</option>
+                            <option value="jpeg">JPEG</option>
+                            <option value="png">PNG</option>
+                            <option value="webp">WEBP</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-600 dark:text-gray-400">Quality</label>
+                        <input type="range" id="qualitySlider" min="10" max="100" value="90" class="w-full">
+                        <div class="flex justify-between text-xs text-gray-500">
+                            <span>Low</span>
+                            <span id="qualityValue">90%</span>
+                            <span>High</span>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-600 dark:text-gray-400">Background Color (for PNG)</label>
+                        <input type="color" id="bgColorPicker" value="#ffffff" class="w-full h-10 rounded cursor-pointer">
+                    </div>
+                </div>
+
+                <!-- Presets -->
+                <div class="space-y-4">
+                    <h3 class="font-semibold text-lg flex items-center">
+                        <i class="fas fa-magic mr-2 text-purple-500"></i>
+                        Quick Presets
+                    </h3>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button class="preset-button px-3 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg text-sm hover:shadow-lg transition" data-preset="web">
+                            <i class="fas fa-globe mr-1"></i> Web
+                        </button>
+                        <button class="preset-button px-3 py-2 bg-gradient-to-r from-pink-500 to-pink-600 text-white rounded-lg text-sm hover:shadow-lg transition" data-preset="social">
+                            <i class="fas fa-share-alt mr-1"></i> Social
+                        </button>
+                        <button class="preset-button px-3 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg text-sm hover:shadow-lg transition" data-preset="print">
+                            <i class="fas fa-print mr-1"></i> Print
+                        </button>
+                        <button class="preset-button px-3 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg text-sm hover:shadow-lg transition" data-preset="thumbnail">
+                            <i class="fas fa-th mr-1"></i> Thumbnail
+                        </button>
+                    </div>
+                    <div class="pt-2">
+                        <button id="applyAllBtn" class="w-full px-4 py-2 gradient-bg text-white rounded-lg hover:shadow-lg transition transform hover:scale-105">
+                            <i class="fas fa-check-double mr-2"></i>Apply to All
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Progress Bar -->
+        <div id="progressContainer" class="hidden mb-6">
+            <div class="bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
+                <div id="progressBar" class="progress-bar" style="width: 0%"></div>
+            </div>
+            <p class="text-center text-sm text-gray-600 dark:text-gray-400 mt-2">
+                Processing: <span id="progressText">0%</span>
+            </p>
+        </div>
+
+        <!-- Image Preview Section -->
+        <section id="previewSection" class="hidden">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold">Image Preview</h2>
+                <div class="flex space-x-2">
+                    <button id="downloadAllBtn" class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition">
+                        <i class="fas fa-download mr-2"></i>Download All (ZIP)
+                    </button>
+                    <button id="clearAllBtn" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition">
+                        <i class="fas fa-trash mr-2"></i>Clear All
+                    </button>
+                </div>
+            </div>
+            
+            <div id="imageGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Image cards will be inserted here -->
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="mt-16 py-8 border-t border-gray-200 dark:border-gray-700">
+        <div class="container mx-auto px-4 text-center text-gray-600 dark:text-gray-400">
+            <p class="mb-2">Made with <i class="fas fa-heart text-red-500"></i> for creators</p>
+            <p class="text-sm">All processing happens in your browser. Your images never leave your device.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Global state
+        let images = [];
+        let currentImageIndex = 0;
+        let isDarkMode = false;
+        let gridEnabled = false;
+
+        // DOM Elements
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const controlPanel = document.getElementById('controlPanel');
+        const previewSection = document.getElementById('previewSection');
+        const imageGrid = document.getElementById('imageGrid');
+        const themeToggle = document.getElementById('themeToggle');
+        const gridToggle = document.getElementById('gridToggle');
+        const aspectRatioLock = document.getElementById('aspectRatioLock');
+        const widthInput = document.getElementById('widthInput');
+        const heightInput = document.getElementById('heightInput');
+        const scaleSlider = document.getElementById('scaleSlider');
+        const scaleValue = document.getElementById('scaleValue');
+        const qualitySlider = document.getElementById('qualitySlider');
+        const qualityValue = document.getElementById('qualityValue');
+        const formatSelect = document.getElementById('formatSelect');
+        const bgColorPicker = document.getElementById('bgColorPicker');
+        const applyAllBtn = document.getElementById('applyAllBtn');
+        const downloadAllBtn = document.getElementById('downloadAllBtn');
+        const clearAllBtn = document.getElementById('clearAllBtn');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            setupEventListeners();
+            checkDarkMode();
+        });
+
+        // Event Listeners
+        function setupEventListeners() {
+            // File upload
+            dropZone.addEventListener('click', () => fileInput.click());
+            dropZone.addEventListener('dragover', handleDragOver);
+            dropZone.addEventListener('dragleave', handleDragLeave);
+            dropZone.addEventListener('drop', handleDrop);
+            fileInput.addEventListener('change', handleFileSelect);
+
+            // Theme toggle
+            themeToggle.addEventListener('click', toggleTheme);
+
+            // Grid toggle
+            gridToggle.addEventListener('click', toggleGrid);
+
+            // Resize controls
+            aspectRatioLock.addEventListener('change', handleAspectRatioChange);
+            widthInput.addEventListener('input', handleWidthChange);
+            heightInput.addEventListener('input', handleHeightChange);
+            scaleSlider.addEventListener('input', handleScaleChange);
+
+            // Quality slider
+            qualitySlider.addEventListener('input', handleQualityChange);
+
+            // Presets
+            document.querySelectorAll('.preset-button').forEach(btn => {
+                btn.addEventListener('click', () => applyPreset(btn.dataset.preset));
+            });
+
+            // Apply all
+            applyAllBtn.addEventListener('click', applyToAll);
+
+            // Download all
+            downloadAllBtn.addEventListener('click', downloadAllAsZip);
+
+            // Clear all
+            clearAllBtn.addEventListener('click', clearAll);
+        }
+
+        // File handling
+        function handleDragOver(e) {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        }
+
+        function handleDragLeave(e) {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            const files = Array.from(e.dataTransfer.files).filter(file => file.type.startsWith('image/'));
+            processFiles(files);
+        }
+
+        function handleFileSelect(e) {
+            const files = Array.from(e.target.files);
+            processFiles(files);
+        }
+
+        async function processFiles(files) {
+            showProgress();
+            
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                updateProgress((i / files.length) * 100);
+                
+                const imageData = await loadImage(file);
+                images.push({
+                    file,
+                    original: imageData,
+                    processed: null,
+                    name: file.name.split('.')[0],
+                    format: file.type.split('/')[1]
+                });
+            }
+            
+            updateProgress(100);
+            setTimeout(() => {
+                hideProgress();
+                displayImages();
+            }, 500);
+        }
+
+        function loadImage(file) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        resolve({
+                            src: e.target.result,
+                            width: img.width,
+                            height: img.height,
+                            aspectRatio: img.width / img.height
+                        });
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function displayImages() {
+            if (images.length === 0) return;
+            
+            controlPanel.classList.remove('hidden');
+            previewSection.classList.remove('hidden');
+            
+            imageGrid.innerHTML = '';
+            images.forEach((image, index) => {
+                const card = createImageCard(image, index);
+                imageGrid.appendChild(card);
+            });
+            
+            // Load first image into controls
+            loadImageIntoControls(0);
+        }
+
+        function createImageCard(image, index) {
+            const card = document.createElement('div');
+            card.className = 'image-card surface bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300';
+            card.style.animationDelay = `${index * 0.1}s`;
+            
+            card.innerHTML = `
+                <div class="relative">
+                    <div class="comparison-slider h-64 bg-gray-100 dark:bg-gray-700" data-index="${index}">
+                        <img src="${image.original.src}" alt="Original" class="w-full h-full object-cover">
+                        <div class="after">
+                            <img src="${image.original.src}" alt="Processed" class="w-full h-full object-cover">
+                        </div>
+                        <div class="divider"></div>
+                        <div class="grid-overlay ${gridEnabled ? 'active' : ''}"></div>
+                    </div>
+                    <div class="absolute top-2 right-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded text-xs">
+                        ${image.original.width} × ${image.original.height}
+                    </div>
+                </div>
+                <div class="p-4">
+                    <input type="text" value="${image.name}" class="w-full px-2 py-1 border rounded dark:bg-gray-700 dark:border-gray-600 mb-2" data-index="${index}" placeholder="Image name">
+                    <div class="flex justify-between items-center text-sm text-gray-600 dark:text-gray-400">
+                        <span>Size: ${(image.file.size / 1024).toFixed(1)} KB</span>
+                        <span>Format: ${image.format.toUpperCase()}</span>
+                    </div>
+                    <div class="mt-3 flex space-x-2">
+                        <button class="flex-1 px-3 py-1 bg-purple-500 text-white rounded hover:bg-purple-600 transition text-sm" onclick="processImage(${index})">
+                            <i class="fas fa-magic mr-1"></i>Process
+                        </button>
+                        <button class="flex-1 px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 transition text-sm" onclick="downloadImage(${index})">
+                            <i class="fas fa-download mr-1"></i>Download
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            // Setup comparison slider
+            setupComparisonSlider(card.querySelector('.comparison-slider'));
+            
+            // Setup name input
+            const nameInput = card.querySelector('input[type="text"]');
+            nameInput.addEventListener('input', (e) => {
+                images[index].name = e.target.value;
+            });
+            
+            // Click to select
+            card.addEventListener('click', () => {
+                loadImageIntoControls(index);
+            });
+            
+            return card;
+        }
+
+        function setupComparisonSlider(slider) {
+            const divider = slider.querySelector('.divider');
+            const after = slider.querySelector('.after');
+            let isResizing = false;
+            
+            const updateSlider = (e) => {
+                if (!isResizing) return;
+                
+                const rect = slider.getBoundingClientRect();
+                const x = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+                const percentage = ((x - rect.left) / rect.width) * 100;
+                
+                if (percentage >= 0 && percentage <= 100) {
+                    divider.style.left = `${percentage}%`;
+                    after.style.width = `${percentage}%`;
+                }
+            };
+            
+            divider.addEventListener('mousedown', () => isResizing = true);
+            slider.addEventListener('mousedown', () => isResizing = true);
+            
+            document.addEventListener('mousemove', updateSlider);
+            document.addEventListener('mouseup', () => isResizing = false);
+            
+            slider.addEventListener('touchstart', () => isResizing = true);
+            document.addEventListener('touchmove', updateSlider);
+            document.addEventListener('touchend', () => isResizing = false);
+        }
+
+        function loadImageIntoControls(index) {
+            currentImageIndex = index;
+            const image = images[index];
+            
+            widthInput.value = image.original.width;
+            heightInput.value = image.original.height;
+            scaleSlider.value = 100;
+            scaleValue.textContent = '100%';
+        }
+
+        async function processImage(index) {
+            const image = images[index];
+            const width = parseInt(widthInput.value) || image.original.width;
+            const height = parseInt(heightInput.value) || image.original.height;
+            const quality = parseInt(qualitySlider.value) / 100;
+            const format = formatSelect.value === 'original' ? image.format : formatSelect.value;
+            const bgColor = bgColorPicker.value;
+            
+            showProgress();
+            updateProgress(0);
+            
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            canvas.width = width;
+            canvas.height = height;
+            
+            // Fill background for transparent images
+            if (format === 'jpeg' || (format === 'original' && image.format === 'jpeg')) {
+                ctx.fillStyle = bgColor;
+                ctx.fillRect(0, 0, width, height);
+            }
+            
+            const img = new Image();
+            img.onload = () => {
+                ctx.drawImage(img, 0, 0, width, height);
+                
+                canvas.toBlob((blob) => {
+                    const processedUrl = URL.createObjectURL(blob);
+                    image.processed = {
+                        src: processedUrl,
+                        blob,
+                        width,
+                        height,
+                        size: blob.size,
+                        format
+                    };
+                    
+                    updateProgress(100);
+                    setTimeout(() => {
+                        hideProgress();
+                        updateImageCard(index);
+                    }, 300);
+                }, `image/${format}`, quality);
+            };
+            img.src = image.original.src;
+        }
+
+        function updateImageCard(index) {
+            const card = imageGrid.children[index];
+            const image = images[index];
+            const comparisonSlider = card.querySelector('.comparison-slider');
+            const afterImg = comparisonSlider.querySelector('.after img');
+            
+            if (image.processed) {
+                afterImg.src = image.processed.src;
+                
+                // Update size info
+                const sizeInfo = card.querySelector('.text-gray-600');
+                sizeInfo.innerHTML = `
+                    <span>Size: ${(image.processed.size / 1024).toFixed(1)} KB</span>
+                    <span>Format: ${image.processed.format.toUpperCase()}</span>
+                `;
+            }
+        }
+
+        function downloadImage(index) {
+            const image = images[index];
+            if (!image.processed) {
+                processImage(index).then(() => {
+                    downloadImage(index);
+                });
+                return;
+            }
+            
+            const link = document.createElement('a');
+            link.href = image.processed.src;
+            link.download = `${image.name}.${image.processed.format}`;
+            link.click();
+        }
+
+        async function downloadAllAsZip() {
+            const zip = new JSZip();
+            
+            showProgress();
+            
+            for (let i = 0; i < images.length; i++) {
+                updateProgress((i / images.length) * 100);
+                
+                if (!images[i].processed) {
+                    await processImage(i);
+                }
+                
+                const image = images[i];
+                zip.file(`${image.name}.${image.processed.format}`, image.processed.blob);
+            }
+            
+            updateProgress(100);
+            
+            zip.generateAsync({ type: 'blob' }).then((content) => {
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(content);
+                link.download = 'pixelforge-images.zip';
+                link.click();
+                
+                setTimeout(() => hideProgress(), 500);
+            });
+        }
+
+        function clearAll() {
+            images = [];
+            imageGrid.innerHTML = '';
+            controlPanel.classList.add('hidden');
+            previewSection.classList.add('hidden');
+            fileInput.value = '';
+        }
+
+        function applyToAll() {
+            images.forEach((_, index) => {
+                processImage(index);
+            });
+        }
+
+        // Control handlers
+        function handleAspectRatioChange() {
+            if (aspectRatioLock.checked && currentImageIndex >= 0) {
+                const image = images[currentImageIndex];
+                heightInput.value = Math.round(widthInput.value / image.original.aspectRatio);
+            }
+        }
+
+        function handleWidthChange() {
+            if (aspectRatioLock.checked && currentImageIndex >= 0) {
+                const image = images[currentImageIndex];
+                heightInput.value = Math.round(widthInput.value / image.original.aspectRatio);
+            }
+        }
+
+        function handleHeightChange() {
+            if (aspectRatioLock.checked && currentImageIndex >= 0) {
+                const image = images[currentImageIndex];
+                widthInput.value = Math.round(heightInput.value * image.original.aspectRatio);
+            }
+        }
+
+        function handleScaleChange() {
+            const scale = scaleSlider.value / 100;
+            scaleValue.textContent = `${scaleSlider.value}%`;
+            
+            if (currentImageIndex >= 0) {
+                const image = images[currentImageIndex];
+                widthInput.value = Math.round(image.original.width * scale);
+                heightInput.value = Math.round(image.original.height * scale);
+            }
+        }
+
+        function handleQualityChange() {
+            qualityValue.textContent = `${qualitySlider.value}%`;
+        }
+
+        // Presets
+        function applyPreset(preset) {
+            const presets = {
+                web: { width: 1920, height: 1080, quality: 80 },
+                social: { width: 1080, height: 1080, quality: 85 },
+                print: { width: 3000, height: 2000, quality: 95 },
+                thumbnail: { width: 150, height: 150, quality: 70 }
+            };
+            
+            const settings = presets[preset];
+            if (settings) {
+                widthInput.value = settings.width;
+                heightInput.value = settings.height;
+                qualitySlider.value = settings.quality;
+                qualityValue.textContent = `${settings.quality}%`;
+                
+                if (aspectRatioLock.checked && currentImageIndex >= 0) {
+                    const image = images[currentImageIndex];
+                    heightInput.value = Math.round(settings.width / image.original.aspectRatio);
+                }
+            }
+        }
+
+        // Theme
+        function checkDarkMode() {
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                document.documentElement.classList.add('dark');
+                isDarkMode = true;
+            }
+        }
+
+        function toggleTheme() {
+            isDarkMode = !isDarkMode;
+            document.documentElement.classList.toggle('dark');
+        }
+
+        // Grid
+        function toggleGrid() {
+            gridEnabled = !gridEnabled;
+            const overlays = document.querySelectorAll('.grid-overlay');
+            overlays.forEach(overlay => {
+                overlay.classList.toggle('active');
+            });
+        }
+
+        // Progress
+        function showProgress() {
+            progressContainer.classList.remove('hidden');
+        }
+
+        function hideProgress() {
+            progressContainer.classList.add('hidden');
+        }
+
+        function updateProgress(percent) {
+            progressBar.style.width = `${percent}%`;
+            progressText.textContent = `${Math.round(percent)}%`;
+        }
+
+        // Touch gestures for mobile
+        let touchStartX = 0;
+        let touchStartY = 0;
+
+        document.addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+        });
+
+        document.addEventListener('touchmove', (e) => {
+            if (!touchStartX || !touchStartY) return;
+            
+            const touchEndX = e.touches[0].clientX;
+            const touchEndY = e.touches[0].clientY;
+            
+            const dx = touchStartX - touchEndX;
+            const dy = touchStartY - touchEndY;
+            
+            // Pinch to zoom simulation
+            if (Math.abs(dx) > 50 || Math.abs(dy) > 50) {
+                const delta = Math.sqrt(dx * dx + dy * dy);
+                const currentScale = parseInt(scaleSlider.value);
+                const newScale = Math.max(10, Math.min(200, currentScale + (delta > 0 ? -5 : 5)));
+                scaleSlider.value = newScale;
+                handleScaleChange();
+                
+                touchStartX = touchEndX;
+                touchStartY = touchEndY;
+            }
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey || e.metaKey) {
+                switch(e.key) {
+                    case 'o':
+                        e.preventDefault();
+                        fileInput.click();
+                        break;
+                    case 's':
+                        e.preventDefault();
+                        if (currentImageIndex >= 0) {
+                            downloadImage(currentImageIndex);
+                        }
+                        break;
+                    case 'a':
+                        e.preventDefault();
+                        applyToAll();
+                        break;
+                    case 'd':
+                        e.preventDefault();
+                        toggleTheme();
+                        break;
+                }
+            }
+        });
+    </script>
+</body>
+</html>
