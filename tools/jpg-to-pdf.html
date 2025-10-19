@@ -60,6 +60,8 @@
             border: 2px dashed var(--primary);
             background: rgba(99, 102, 241, 0.05);
             transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
         }
         
         .drop-zone.drag-over {
@@ -492,6 +494,16 @@
             background: var(--primary);
         }
         
+        .file-input-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+        
         @media (max-width: 768px) {
             .container {
                 padding: 10px;
@@ -540,10 +552,11 @@
                         <i class="fas fa-cloud-upload-alt text-4xl text-white mb-4"></i>
                         <p class="text-white mb-2">Drag & drop your images here</p>
                         <p class="text-white/70 text-sm mb-4">or</p>
-                        <button class="btn-secondary">
+                        <button class="btn-secondary" id="browseButton">
                             <i class="fas fa-folder-open mr-2"></i>Browse Files
                         </button>
                         <input type="file" id="fileInput" accept="image/*" multiple class="hidden">
+                        <div class="file-input-overlay"></div>
                         <p class="text-white/60 text-xs mt-4">Supports JPG, PNG, GIF, BMP</p>
                     </div>
                 </section>
@@ -791,11 +804,14 @@
             // Theme toggle
             document.getElementById('themeToggle').addEventListener('click', toggleTheme);
             
-            // File upload
+            // File upload - Fixed for mobile
             const dropZone = document.getElementById('dropZone');
             const fileInput = document.getElementById('fileInput');
+            const browseButton = document.getElementById('browseButton');
+            const fileInputOverlay = document.querySelector('.file-input-overlay');
             
-            dropZone.addEventListener('click', () => fileInput.click());
+            browseButton.addEventListener('click', () => fileInput.click());
+            fileInputOverlay.addEventListener('click', () => fileInput.click());
             fileInput.addEventListener('change', handleFileSelect);
             
             // Drag and drop
@@ -803,7 +819,7 @@
             dropZone.addEventListener('dragleave', handleDragLeave);
             dropZone.addEventListener('drop', handleDrop);
             
-            // Touch events for mobile
+            // Touch events for mobile - Fixed
             dropZone.addEventListener('touchstart', handleTouchStart, { passive: false });
             dropZone.addEventListener('touchmove', handleTouchMove, { passive: false });
             dropZone.addEventListener('touchend', handleTouchEnd);
@@ -862,7 +878,7 @@
             processFiles(files);
         }
 
-        // Touch events for mobile
+        // Touch events for mobile - Fixed
         function handleTouchStart(e) {
             e.preventDefault();
             const touch = e.touches[0];
@@ -895,6 +911,12 @@
 
         function processFiles(files) {
             const imageFiles = files.filter(file => file.type.startsWith('image/'));
+            
+            // Check if adding these files would exceed the limit
+            if (uploadedImages.length + imageFiles.length > 10000) {
+                showNotification('Cannot add more than 10,000 images', 'error');
+                return;
+            }
             
             imageFiles.forEach(file => {
                 const reader = new FileReader();
@@ -996,37 +1018,38 @@
             saveToLocalStorage();
         }
 
-        // Drag functionality
+        // Drag functionality - Fixed for PC
         function initializeDrag() {
+            const imageList = document.getElementById('imageList');
+            
+            // Initialize Sortable for PC drag functionality
+            new Sortable(imageList, {
+                animation: 150,
+                ghostClass: 'sortable-ghost',
+                handle: '.drag-handle',
+                onEnd: function(evt) {
+                    const items = Array.from(imageList.children);
+                    const newOrder = items.map(item => {
+                        const index = parseInt(item.getAttribute('data-index'));
+                        return uploadedImages[index];
+                    });
+                    uploadedImages = newOrder;
+                    saveToLocalStorage();
+                }
+            });
+            
+            // Mobile drag functionality
             const imageItems = document.querySelectorAll('.image-item');
             const dragHandles = document.querySelectorAll('.drag-handle');
-            
-            // Mouse events for drag handles
-            dragHandles.forEach(handle => {
-                handle.addEventListener('mousedown', handleDragStart);
-            });
             
             // Touch events for drag handles
             dragHandles.forEach(handle => {
                 handle.addEventListener('touchstart', handleTouchDragStart, { passive: false });
             });
             
-            // Global mouse events
-            document.addEventListener('mousemove', handleDragMove);
-            document.addEventListener('mouseup', handleDragEnd);
-            
             // Global touch events
             document.addEventListener('touchmove', handleTouchDragMove, { passive: false });
             document.addEventListener('touchend', handleTouchDragEnd);
-        }
-
-        function handleDragStart(e) {
-            if (e.target.closest('button')) return;
-            
-            draggedElement = e.currentTarget.closest('.image-item');
-            draggedElement.classList.add('dragging');
-            
-            e.preventDefault();
         }
 
         function handleTouchDragStart(e) {
@@ -1048,12 +1071,6 @@
             }, 500);
         }
 
-        function handleDragMove(e) {
-            if (!draggedElement) return;
-            
-            e.preventDefault();
-        }
-
         function handleTouchDragMove(e) {
             if (!draggedElement) return;
             
@@ -1070,16 +1087,6 @@
             }
         }
 
-        function handleDragEnd(e) {
-            if (!draggedElement) return;
-            
-            draggedElement.classList.remove('dragging');
-            draggedElement.classList.remove('long-press');
-            draggedElement = null;
-            
-            updateImageOrder();
-        }
-
         function handleTouchDragEnd(e) {
             if (!draggedElement) return;
             
@@ -1091,7 +1098,6 @@
                 updateImageOrder();
             }
             
-            draggedElement.classList.remove('dragging');
             draggedElement.classList.remove('long-press');
             draggedElement = null;
             isLongPress = false;
@@ -1118,25 +1124,9 @@
             saveToLocalStorage();
         }
 
-        // Sortable initialization for desktop
+        // Sortable initialization for desktop - Fixed
         function initializeSortable() {
-            const imageList = document.getElementById('imageList');
-            if (imageList.children.length > 0) {
-                new Sortable(imageList, {
-                    animation: 150,
-                    ghostClass: 'sortable-ghost',
-                    handle: '.drag-handle',
-                    onEnd: function(evt) {
-                        const items = Array.from(imageList.children);
-                        const newOrder = items.map(item => {
-                            const index = parseInt(item.getAttribute('data-index'));
-                            return uploadedImages[index];
-                        });
-                        uploadedImages = newOrder;
-                        saveToLocalStorage();
-                    }
-                });
-            }
+            // This is now handled in initializeDrag function
         }
 
         // Rotate functionality
