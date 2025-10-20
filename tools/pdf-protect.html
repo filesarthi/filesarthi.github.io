@@ -11,9 +11,6 @@
     <!-- Font Awesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Turn.js for page flip animation -->
-    <script src="https://cdn.jsdelivr.net/npm/turn.js@1.4.2/lib/turn.min.js"></script>
-    
     <style>
         :root {
             --parchment: #f3e9d2;
@@ -24,6 +21,8 @@
             --text-light: #5a4a30;
             --temple-red: #a62639;
             --temple-orange: #e67e22;
+            --dwapar-bg: #2c1810;
+            --normal-bg: #1a1a1a;
         }
 
         * {
@@ -34,11 +33,16 @@
 
         body {
             font-family: 'Noto Sans Devanagari', sans-serif;
-            background: linear-gradient(135deg, #1a1a1a, #2c1810);
+            background: linear-gradient(135deg, var(--normal-bg), #2c1810);
             color: var(--text-dark);
             overflow-x: hidden;
             position: relative;
             min-height: 100vh;
+            transition: background 0.5s ease;
+        }
+
+        body.dwapar-mode {
+            background: linear-gradient(135deg, var(--dwapar-bg), #1a0f08);
         }
 
         /* Background Effects */
@@ -231,16 +235,22 @@
             min-height: 600px;
             padding: 40px 20px;
             position: relative;
+            perspective: 2000px;
         }
 
-        #magazine {
+        .flipbook {
             width: 100%;
             max-width: 900px;
             height: 600px;
             position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.5s;
         }
 
         .page {
+            position: absolute;
+            width: 450px;
+            height: 600px;
             background: var(--parchment);
             background-image: 
                 linear-gradient(rgba(0,0,0,0.05) 1px, transparent 1px),
@@ -249,8 +259,24 @@
             border: 2px solid var(--dark-gold);
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
             padding: 40px;
-            position: relative;
+            transform-style: preserve-3d;
+            transform-origin: left center;
+            transition: transform 0.5s;
+            backface-visibility: hidden;
             overflow: hidden;
+        }
+
+        .page.right {
+            left: 450px;
+            transform-origin: right center;
+        }
+
+        .page.flipped {
+            transform: rotateY(-180deg);
+        }
+
+        .page.right.flipped {
+            transform: rotateY(180deg);
         }
 
         .page::before {
@@ -475,8 +501,17 @@
                 font-size: 0.9rem;
             }
 
-            #magazine {
+            .flipbook {
                 height: 500px;
+            }
+
+            .page {
+                width: 100%;
+                height: 500px;
+            }
+
+            .page.right {
+                left: 0;
             }
 
             .page {
@@ -550,6 +585,70 @@
             opacity: 1;
             transform: translateX(-50%) translateY(0);
         }
+
+        /* Chapter List Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.8);
+        }
+
+        .modal-content {
+            background-color: var(--parchment);
+            margin: 5% auto;
+            padding: 20px;
+            border: 2px solid var(--gold);
+            width: 80%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+            border-radius: 10px;
+        }
+
+        .close {
+            color: var(--text-dark);
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: var(--temple-red);
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .chapter-list {
+            list-style-type: none;
+        }
+
+        .chapter-item {
+            padding: 10px;
+            border-bottom: 1px solid var(--dark-gold);
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .chapter-item:hover {
+            background: rgba(212, 175, 55, 0.2);
+        }
+
+        .chapter-title {
+            font-weight: bold;
+            color: var(--temple-red);
+        }
+
+        .chapter-subtitle {
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
     </style>
 </head>
 <body>
@@ -589,27 +688,9 @@
 
     <!-- Controls -->
     <div class="controls">
-        <select id="parvaSelect">
-            <option value="0">अध्याय चुनें</option>
-            <option value="1">आदि पर्व</option>
-            <option value="2">सभा पर्व</option>
-            <option value="3">वन पर्व</option>
-            <option value="4">विराट पर्व</option>
-            <option value="5">उद्योग पर्व</option>
-            <option value="6">भीष्म पर्व</option>
-            <option value="7">द्रोण पर्व</option>
-            <option value="8">कर्ण पर्व</option>
-            <option value="9">शल्य पर्व</option>
-            <option value="10">सौप्तिक पर्व</option>
-            <option value="11">स्त्री पर्व</option>
-            <option value="12">शांति पर्व</option>
-            <option value="13">अनुशासन पर्व</option>
-            <option value="14">अश्वमेध पर्व</option>
-            <option value="15">आश्रंवासिक पर्व</option>
-            <option value="16">मौसल पर्व</option>
-            <option value="17">महाप्रस्थानिक पर्व</option>
-            <option value="18">स्वर्गारोहण पर्व</option>
-        </select>
+        <button class="control-btn" id="parvaSelect">
+            <i class="fas fa-book"></i> पर्व चुनें
+        </button>
 
         <input type="text" id="searchInput" placeholder="श्लोक खोजें...">
 
@@ -640,204 +721,23 @@
             <i class="fas fa-chevron-left"></i>
         </div>
         
-        <div id="magazine">
-            <!-- Page 1: Cover -->
-            <div class="page">
-                <div class="page-content">
-                    <div class="page-header">
-                        <div class="page-title">महाभारत</div>
-                        <div class="page-subtitle">ज्ञान का अक्षय सागर</div>
-                    </div>
-                    <div class="shloka-container">
-                        <div class="shloka">
-                            ॐ नमो भगवते वासुदेवाय<br>
-                            नमः संतानवे नमः
-                        </div>
-                        <div class="meaning">
-                            महाभारत भगवान वेदव्यास द्वारा रचित एक महान ग्रंथ है,<br>
-                            जो धर्म, अर्थ, काम और मोक्ष के चारों पुरुषार्थों का वर्णन करता है।
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Page 2: Introduction -->
-            <div class="page">
-                <div class="page-content">
-                    <div class="page-header">
-                        <div class="page-title">परिचय</div>
-                    </div>
-                    <div class="shloka-container">
-                        <div class="shloka">
-                            महाभारत में अठारह पर्व हैं,<br>
-                            जिनमें एक लाख श्लोकों का संग्रह है।
-                        </div>
-                        <div class="meaning">
-                            यह ग्रंथ कौरवों और पांडवों के बीच हुए धर्मयुद्ध का विस्तृत वर्णन करता है।<br>
-                            इसमें भगवान श्रीकृष्ण द्वारा अर्जुन को दिया गया भगवद्गीता का ज्ञान भी सम्मिलित है।
-                        </div>
-                        <button class="listen-btn">
-                            <i class="fas fa-headphones"></i> सुनें
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Page 3: Adi Parva -->
-            <div class="page">
-                <div class="page-content">
-                    <div class="page-header">
-                        <div class="page-title">आदि पर्व</div>
-                        <div class="page-subtitle">पहला खंड</div>
-                    </div>
-                    <div class="chapter-info">
-                        अध्याय: 1
-                    </div>
-                    <div class="shloka-container">
-                        <div class="shloka">
-                            नारायणं नमस्कृत्य नरं चैव नरोत्तमम्<br>
-                            देवीं सरस्वतीं चैव ततो जयमुदीरयेत्
-                        </div>
-                        <div class="meaning">
-                            नारायण को नमस्कार करके, नर और नरोत्तम को भी नमस्कार करके,<br>
-                            तथा सरस्वती देवी को भी नमस्कार करके, उसके बाद जय का उच्चारण करें।
-                        </div>
-                        <button class="listen-btn">
-                            <i class="fas fa-headphones"></i> सुनें
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Page 4: Sabha Parva -->
-            <div class="page">
-                <div class="page-content">
-                    <div class="page-header">
-                        <div class="page-title">सभा पर्व</div>
-                        <div class="page-subtitle">दूसरा खंड</div>
-                    </div>
-                    <div class="chapter-info">
-                        अध्याय: 5
-                    </div>
-                    <div class="shloka-container">
-                        <div class="shloka">
-                            धर्मश्च क्रियाश्च धृतिश्च लाभश्च लाभपुरुषाश्च<br>
-                            विज्ञानं विज्ञानं चैव धर्मश्च सत्यं च धृतिः
-                        </div>
-                        <div class="meaning">
-                            धर्म, कर्म, धैर्य, लाभ, लाभ के कारण, ज्ञान, विज्ञान,<br>
-                            सत्य और धैर्य - ये सभी गुण मनुष्य को सफल बनाते हैं।
-                        </div>
-                        <button class="listen-btn">
-                            <i class="fas fa-headphones"></i> सुनें
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Page 5: Bhishma Parva -->
-            <div class="page">
-                <div class="page-content">
-                    <div class="page-header">
-                        <div class="page-title">भीष्म पर्व</div>
-                        <div class="page-subtitle">छठा खंड</div>
-                    </div>
-                    <div class="chapter-info">
-                        अध्याय: 47
-                    </div>
-                    <div class="shloka-container">
-                        <div class="shloka">
-                            यदा यदा हि धर्मस्य ग्लानिर्भवति भारत<br>
-                            अभ्युत्थानमधर्मस्य तदात्मानं सृजाम्यहम्
-                        </div>
-                        <div class="meaning">
-                            जब-जब धर्म की हानि होती है और अधर्म की वृद्धि होती है,<br>
-                            तब-तब मैं अपने को उत्पन्न करता हूँ।
-                        </div>
-                        <button class="listen-btn">
-                            <i class="fas fa-headphones"></i> सुनें
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Page 6: Bhagavad Gita -->
-            <div class="page">
-                <div class="page-content">
-                    <div class="page-header">
-                        <div class="page-title">भगवद्गीता</div>
-                        <div class="page-subtitle">भीष्म पर्व में</div>
-                    </div>
-                    <div class="chapter-info">
-                        अध्याय: 2, श्लोक: 47
-                    </div>
-                    <div class="shloka-container">
-                        <div class="shloka">
-                            कर्मण्येवाधिकारस्ते मा फलेषु कदाचन<br>
-                            मा कर्मफलहेतुर्भूर्मा ते संगोऽस्त्वकर्मणि
-                        </div>
-                        <div class="meaning">
-                            तुम्हारा अधिकार केवल कर्म करने में है, फलों में कभी नहीं।<br>
-                            इसलिए तुम कर्म के फल को हेतु न बनो, अपने को कर्म में आसक्त भी मत करो।
-                        </div>
-                        <button class="listen-btn">
-                            <i class="fas fa-headphones"></i> सुनें
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Page 7: Shanti Parva -->
-            <div class="page">
-                <div class="page-content">
-                    <div class="page-header">
-                        <div class="page-title">शांति पर्व</div>
-                        <div class="page-subtitle">बारहवां खंड</div>
-                    </div>
-                    <div class="chapter-info">
-                        अध्याय: 58
-                    </div>
-                    <div class="shloka-container">
-                        <div class="shloka">
-                            अहिंसा परमो धर्मः धर्महिंसा तथैव च<br>
-                            सत्यं ब्रूयात् प्रियं ब्रूयात् न ब्रूयात् सत्यमप्रियम्
-                        </div>
-                        <div class="meaning">
-                            अहिंसा परम धर्म है, धर्म की रक्षा के लिए हिंसा भी धर्म है।<br>
-                            सत्य कहो, प्रिय कहो, परन्तु अप्रिय सत्य न कहो।
-                        </div>
-                        <button class="listen-btn">
-                            <i class="fas fa-headphones"></i> सुनें
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Page 8: Conclusion -->
-            <div class="page">
-                <div class="page-content">
-                    <div class="page-header">
-                        <div class="page-title">समापन</div>
-                    </div>
-                    <div class="shloka-container">
-                        <div class="shloka">
-                            यत्र योगेश्वरः कृष्णो यत्र पार्थो धनुर्धरः<br>
-                            तत्र श्रीर्विजयो भूतिर्ध्रुवा नीतिर्मतिर्मम
-                        </div>
-                        <div class="meaning">
-                            जहाँ योगेश्वर भगवान कृष्ण और धनुर्धारी अर्जुन होते हैं,<br>
-                            वहाँ श्री, विजय, धन, धर्म, नीति और मेरी मति निश्चित रूप से विद्यमान होती है।
-                        </div>
-                        <button class="listen-btn">
-                            <i class="fas fa-headphones"></i> सुनें
-                        </button>
-                    </div>
-                </div>
-            </div>
+        <div class="flipbook" id="flipbook">
+            <!-- Pages will be dynamically generated -->
         </div>
 
         <div class="nav-arrow next" id="nextBtn">
             <i class="fas fa-chevron-right"></i>
+        </div>
+    </div>
+
+    <!-- Chapter List Modal -->
+    <div id="chapterModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>महाभारत के पर्व</h2>
+            <ul class="chapter-list" id="chapterList">
+                <!-- Chapter list will be dynamically generated -->
+            </ul>
         </div>
     </div>
 
@@ -865,12 +765,327 @@
     </audio>
 
     <script>
+        // Mahabharata data structure
+        const mahabharataData = {
+            parvas: [
+                {
+                    id: 1,
+                    name: "आदि पर्व",
+                    sanskritName: "Ādi Parva",
+                    chapters: 236,
+                    summary: "यह पर्व महाभारत का प्रथम भाग है जिसमें कुरु वंश की उत्पत्ति, भीष्म की प्रतिज्ञा, शकुनि की कुटिलता, और पांडवों के जन्म एवं बचपन का वर्णन है।",
+                    keyShlokas: [
+                        {
+                            text: "नारायणं नमस्कृत्य नरं चैव नरोत्तमम्\nदेवीं सरस्वतीं चैव ततो जयमुदीरयेत्",
+                            meaning: "नारायण को नमस्कार करके, नर और नरोत्तम को भी नमस्कार करके, तथा सरस्वती देवी को भी नमस्कार करके, उसके बाद जय का उच्चारण करें।"
+                        },
+                        {
+                            text: "वैशंपायन उवाच\nजनमेजयः परीक्षितो नाम राजा\nअभिषिच्य समानीय तपसे तप्तवानसुरः",
+                            meaning: "वैशंपायन कहते हैं - परीक्षित के पुत्र जनमेजय नामक राजा ने राज्याभिषेक कराया और तपस्या में तपस्या की।"
+                        }
+                    ]
+                },
+                {
+                    id: 2,
+                    name: "सभा पर्व",
+                    sanskritName: "Sabha Parva",
+                    chapters: 79,
+                    summary: "इस पर्व में युधिष्ठिर का राजसूय यज्ञ, द्यूत क्रीड़ा, और पांडवों का वनवास का वर्णन है।",
+                    keyShlokas: [
+                        {
+                            text: "धर्मश्च क्रियाश्च धृतिश्च लाभश्च लाभपुरुषाश्च\nविज्ञानं विज्ञानं चैव धर्मश्च सत्यं च धृतिः",
+                            meaning: "धर्म, कर्म, धैर्य, लाभ, लाभ के कारण, ज्ञान, विज्ञान, सत्य और धैर्य - ये सभी गुण मनुष्य को सफल बनाते हैं।"
+                        },
+                        {
+                            text: "राजा न विज्ञायते कश्चित्\nकिं च न विज्ञायते\nकिं च विज्ञायते न च\nकिं च न विज्ञायते च",
+                            meaning: "राजा कुछ भी नहीं जानता, कुछ भी नहीं जानता, कुछ जानता है और कुछ नहीं जानता।"
+                        }
+                    ]
+                },
+                {
+                    id: 3,
+                    name: "वन पर्व",
+                    sanskritName: "Vana Parva",
+                    chapters: 299,
+                    summary: "यह पर्व पांडवों के बारह वर्ष के वनवास का विस्तृत वर्णन करता है, जिसमें उनकी कई कथाएँ और यात्राएँ शामिल हैं।",
+                    keyShlokas: [
+                        {
+                            text: "वने वसति राजा यः स राजा\nवने वसति राजा यः स राजा\nवने वसति राजा यः स राजा",
+                            meaning: "जो राजा वन में रहता है, वही राजा है। जो राजा वन में रहता है, वही राजा है।"
+                        },
+                        {
+                            text: "अनासक्तः सततं कार्य\nकर्मण्यभिहितो नरः\nअकामः सर्वकामेषु\nविमुक्तः जीवति बुधः",
+                            meaning: "जो मनुष्य निरंतर कर्म में लगा रहता है, बिना किसी आसक्ति के, सभी कामनाओं से मुक्त होकर, वह बुद्धिमान व्यक्ति जीता है।"
+                        }
+                    ]
+                },
+                {
+                    id: 4,
+                    name: "विराट पर्व",
+                    sanskritName: "Virata Parva",
+                    chapters: 72,
+                    summary: "इस पर्व में पांडवों का एक वर्ष का अज्ञातवास विराट नगरी में बिताने का वर्णन है।",
+                    keyShlokas: [
+                        {
+                            text: "अज्ञातवासे वसन्ति ये\nपाण्डवाः सह द्रौपद्या\nविराटे नगरे रम्ये\nगुप्तरूपेण धीमतः",
+                            meaning: "ये पांडव द्रौपदी के साथ विराट नगरी में गुप्त रूप से अज्ञातवास बिता रहे हैं।"
+                        },
+                        {
+                            text: "कीचकः कौरवबान्धवः\nविराटस्य स्वशोधितः\nअन्ते हतः सहदेवेन\nभीमसेनस्य चापि तथा",
+                            meaning: "कीचक, कौरवों का बांधव, विराट का स्वशोधित हुआ, और अंत में सहदेव और भीमसेन द्वारा मारा गया।"
+                        }
+                    ]
+                },
+                {
+                    id: 5,
+                    name: "उद्योग पर्व",
+                    sanskritName: "Udyoga Parva",
+                    chapters: 199,
+                    summary: "यह पर्व कुरुक्षेत्र युद्ध से पहले की तैयारियों, शांति प्रयासों और कृष्ण के दूत के रूप में जाने का वर्णन करता है।",
+                    keyShlokas: [
+                        {
+                            text: "यदि ते हृषीकेशः स्यात्\nद्रोणः पितामहश्च तथा\nअश्वत्थामा विकर्णश्च\nसोमदत्तस्तथैव च",
+                            meaning: "यदि तुम्हारे पास हृषीकेश (कृष्ण), द्रोण, पितामह (भीष्म), अश्वत्थामा, विकर्ण और सोमदत्त होते, तो भी तुम्हारी विजय निश्चित नहीं थी।"
+                        },
+                        {
+                            text: "नैव ते जानन्ति मामेव\nन त्वां न जानन्ति लक्ष्मणम्\nन जानन्ति धनंजयं\nन जानन्ति मद्रिसुतम्",
+                            meaning: "न तो वे मुझे जानते हैं, न तुम्हें, न लक्ष्मण को, न धनंजय (अर्जुन) को, और न मद्रिसुत (शकुनि) को।"
+                        }
+                    ]
+                },
+                {
+                    id: 6,
+                    name: "भीष्म पर्व",
+                    sanskritName: "Bhishma Parva",
+                    chapters: 124,
+                    summary: "यह पर्व कुरुक्षेत्र युद्ध के प्रथम दस दिनों का वर्णन करता है, जिसमें भीष्म के सेनापतित्व और उनके पतन का विवरण है।",
+                    keyShlokas: [
+                        {
+                            text: "यदा यदा हि धर्मस्य ग्लानिर्भवति भारत\nअभ्युत्थानमधर्मस्य तदात्मानं सृजाम्यहम्",
+                            meaning: "जब-जब धर्म की हानि होती है और अधर्म की वृद्धि होती है, तब-तब मैं अपने को उत्पन्न करता हूँ।"
+                        },
+                        {
+                            text: "परित्राणाय साधूनां\nविनाशाय च दुष्कृताम्\nधर्मसंस्थापनार्थाय\nसंभवामि युगे युगे",
+                            meaning: "सज्जनों की रक्षा के लिए, दुष्टों के विनाश के लिए, और धर्म की स्थापना के लिए, मैं युग-युग में प्रकट होता हूँ।"
+                        }
+                    ]
+                },
+                {
+                    id: 7,
+                    name: "द्रोण पर्व",
+                    sanskritName: "Drona Parva",
+                    chapters: 170,
+                    summary: "इस पर्व में युद्ध के अगले पांच दिनों का वर्णन है, जिसमें द्रोणाचार्य के सेनापतित्व और उनके मरण का विवरण है।",
+                    keyShlokas: [
+                        {
+                            text: "द्रोणः परशुरामश्चैव\nअश्वत्थामा विकर्णश्च\nभूरिश्रवा शल्यश्चैव\nकृपश्च कर्ण एव च",
+                            meaning: "द्रोण, परशुराम, अश्वत्थामा, विकर्ण, भूरिश्रवा, शल्य, कृप और कर्ण - ये सभी महारथी हैं।"
+                        },
+                        {
+                            text: "अभिमन्युः सुबलश्च\nधृष्टद्युम्नश्च वीर्यवान्\nसात्यकिश्च महाबाहुः\nद्रौपदेयाश्च सर्वे ते",
+                            meaning: "अभिमन्यु, सुबल, धृष्टद्युम्न, सात्यकि, और द्रौपदी के पुत्र - ये सभी वीर हैं।"
+                        }
+                    ]
+                },
+                {
+                    id: 8,
+                    name: "कर्ण पर्व",
+                    sanskritName: "Karna Parva",
+                    chapters: 96,
+                    summary: "यह पर्व कर्ण के सेनापतित्व में युद्ध के दो दिनों और कर्ण-अर्जुन के महासंग्राम का वर्णन करता है।",
+                    keyShlokas: [
+                        {
+                            text: "कर्णः कौन्तेयः सूतपुत्रः\nअङ्गराजपुत्रश्च सः\nदानवीर्यगुणैः युक्तः\nसर्वैः पूजितो महान्",
+                            meaning: "कर्ण, कुन्ती का पुत्र, सूत का पुत्र, अंगराज का पुत्र, दान, वीरता और गुणों से युक्त, सभी द्वारा पूजित महान्।"
+                        },
+                        {
+                            text: "अर्जुनः पाण्डुपुत्रश्च\nकृष्णद्वैपायनश्च तथा\nयुधिष्ठिरः भीमसेनः\nनकुलः सहदेवश्च तथा",
+                            meaning: "अर्जुन, पाण्डु का पुत्र, कृष्णद्वैपायन, युधिष्ठिर, भीमसेन, नकुल और सहदेव - ये सभी पांडव हैं।"
+                        }
+                    ]
+                },
+                {
+                    id: 9,
+                    name: "शल्य पर्व",
+                    sanskritName: "Shalya Parva",
+                    chapters: 64,
+                    summary: "इस पर्व में शल्य के सेनापतित्व में युद्ध के अगले दिन और दुर्योधन के मरण का वर्णन है।",
+                    keyShlokas: [
+                        {
+                            text: "शल्यः माद्रदेशस्य राजा\nनकुलसहदेवयोः मातुलः\nसेनापतिः कौरवाणां\nयुद्धे अपि महान् वीरः",
+                            meaning: "शल्य, माद्र देश के राजा, नकुल और सहदेव के मामा, कौरवों के सेनापति, युद्ध में भी महान् वीर।"
+                        },
+                        {
+                            text: "दुर्योधनः दुःशासनश्च\nविकर्णश्च महाबलः\nदुःशासनः विकर्णश्च\nचित्रसेनश्च वीर्यवान्",
+                            meaning: "दुर्योधन, दुःशासन, विकर्ण महाबली, दुःशासन, विकर्ण, और चित्रसेन वीर्यवान्।"
+                        }
+                    ]
+                },
+                {
+                    id: 10,
+                    name: "सौप्तिक पर्व",
+                    sanskritName: "Sauptika Parva",
+                    chapters: 18,
+                    summary: "इस पर्व में अश्वत्थामा द्वारा पांडव सेना पर रात्रि में किए गए आक्रमण का वर्णन है।",
+                    keyShlokas: [
+                        {
+                            text: "अश्वत्थामा द्रोणपुत्रः\nकृपश्च कृतवर्मा च\nरात्रौ पाण्डवसैन्यस्य\nनाशं कृतवन्ति दुर्मनाः",
+                            meaning: "अश्वत्थामा, द्रोण का पुत्र, कृप और कृतवर्मा - ये दुष्ट मनुष्य रात में पांडव सेना का नाश करते हैं।"
+                        },
+                        {
+                            text: "द्रौपद्याः पुत्राः शिष्याः\nधृष्टद्युम्नस्य च तथा\nघातिताः सुप्ते सति\nअश्वत्थामणा दुरात्मना",
+                            meaning: "द्रौपदी के पुत्र, धृष्टद्युम्न के शिष्य, सोते समय दुष्टात्मा अश्वत्थामा द्वारा मारे गए।"
+                        }
+                    ]
+                },
+                {
+                    id: 11,
+                    name: "स्त्री पर्व",
+                    sanskritName: "Stri Parva",
+                    chapters: 27,
+                    summary: "इस पर्व में युद्ध के बाद स्त्रियों का विलाप, गांधारी और द्रौपदी का शोक और धृतराष्ट्र का दुःख वर्णित है।",
+                    keyShlokas: [
+                        {
+                            text: "गांधारी धृतराष्ट्रश्च\nदुःखेन परिपीडितौ\nपुत्रशोकेन व्याकुलौ\nरुदन्तौ दिवसं रात्रिम्",
+                            meaning: "गांधारी और धृतराष्ट्र, पुत्र शोक से पीड़ित, व्याकुल, दिन-रात रोते हैं।"
+                        },
+                        {
+                            text: "द्रौपदी पुत्रशोकात्\nविलपति दुःखिता\nकौरवाणां निधनात्\nपाण्डवानां च दुःखेन",
+                            meaning: "द्रौपदी, पुत्र शोक से, कौरवों के निधन से, और पांडवों के दुःख से दुःखी होकर विलपती है।"
+                        }
+                    ]
+                },
+                {
+                    id: 12,
+                    name: "शांति पर्व",
+                    sanskritName: "Shanti Parva",
+                    chapters: 365,
+                    summary: "यह महाभारत का सबसे बड़ा पर्व है जिसमें भीष्म द्वारा युधिष्ठिर को राजधर्म, मोक्षधर्म और अन्य दार्शनिक विषयों पर शिक्षा दी गई है।",
+                    keyShlokas: [
+                        {
+                            text: "अहिंसा परमो धर्मः धर्महिंसा तथैव च\nसत्यं ब्रूयात् प्रियं ब्रूयात् न ब्रूयात् सत्यमप्रियम्",
+                            meaning: "अहिंसा परम धर्म है, धर्म की रक्षा के लिए हिंसा भी धर्म है। सत्य कहो, प्रिय कहो, परन्तु अप्रिय सत्य न कहो।"
+                        },
+                        {
+                            text: "धर्मो रक्षति रक्षितः\nधर्मो हन्ति हतः कथम्\nतस्मात् धर्मं सदा रक्षेत्\nधर्मरक्षणं परं तपः",
+                            meaning: "धर्म रक्षक की रक्षा करता है, धर्म हन्ता का वध कैसे करता है? इसलिए सदा धर्म की रक्षा करो, धर्म की रक्षा ही परम तप है।"
+                        }
+                    ]
+                },
+                {
+                    id: 13,
+                    name: "अनुशासन पर्व",
+                    sanskritName: "Anushasana Parva",
+                    chapters: 168,
+                    summary: "इस पर्व में भीष्म के अंतिम उपदेश, विभिन्न दान, व्रत और नैतिक नियमों का विस्तृत वर्णन है।",
+                    keyShlokas: [
+                        {
+                            text: "दानं हि परमं धन्यं\nदातारं च प्रशस्यति\nदानेन तु पुण्यं लभ्ये\nपापं च नश्यति क्षणात्",
+                            meaning: "दान परम धन्य है, दाता की प्रशंसा होती है। दान से पुण्य प्राप्त होता है और पाप क्षण भर में नष्ट हो जाता है।"
+                        },
+                        {
+                            text: "वृद्धानां सेवा परमा\nगुरूणां च पूजनं शुभम्\nअतिथिसेवा च धर्मः\nसत्यं चैव हि धर्मः",
+                            meaning: "वृद्धों की सेवा परम है, गुरुओं की पूजा शुभ है, अतिथि सेवा धर्म है, और सत्य भी धर्म है।"
+                        }
+                    ]
+                },
+                {
+                    id: 14,
+                    name: "अश्वमेध पर्व",
+                    sanskritName: "Ashvamedha Parva",
+                    chapters: 96,
+                    summary: "इस पर्व में युधिष्ठिर द्वारा किए गए अश्वमेध यज्ञ का वर्णन है, जिसमें अर्जुन ने अश्व का अनुसरण किया।",
+                    keyShlokas: [
+                        {
+                            text: "अश्वमेधो महायज्ञः\nराज्ञः कर्तव्यमुत्तमम्\nयुधिष्ठिरेण कृतः सोऽयं\nराज्यस्थापनार्थं विभोः",
+                            meaning: "अश्वमेध महान् यज्ञ है, राजा का परम कर्तव्य। यह युधिष्ठिर द्वारा राज्य की स्थापना के लिए किया गया।"
+                        },
+                        {
+                            text: "अर्जुनः बाहुशाली\nगांधीवधनुर्धरः\nअश्वस्य अनुवर्तकः\nसर्वान् जित्वा निवर्तते",
+                            meaning: "अर्जुन, बाहुशाली, गांधीव धनुष धारण करने वाला, अश्व का अनुसरण करता हुआ, सभी को जीतकर लौटता है।"
+                        }
+                    ]
+                },
+                {
+                    id: 15,
+                    name: "आश्रंवासिक पर्व",
+                    sanskritName: "Ashramavasika Parva",
+                    chapters: 42,
+                    summary: "इस पर्व में धृतराष्ट्र, गांधारी और कुंती का वानप्रस्थ आश्रम में जाना और उनकी मृत्यु का वर्णन है।",
+                    keyShlokas: [
+                        {
+                            text: "धृतराष्ट्रः गांधारी च\nकुन्ती च महाभागा\nवानप्रस्थं गताः सर्वे\nतपः कर्तुं वनं गताः",
+                            meaning: "धृतराष्ट्र, गांधारी और कुंती महाभागा, सभी वानप्रस्थ को गए, तप करने वन में गए।"
+                        },
+                        {
+                            text: "वने वसन्ति ते सर्वे\nधर्ममाचरन्ति धीराः\nअन्ते काले मृता ते\nस्वर्गं गच्छन्ति पुण्यात्मानः",
+                            meaning: "वे सभी वन में रहते हैं, धर्म का पालन करते हैं धीर, अंत में काल में मरते हैं, स्वर्ग जाते हैं पुण्यात्मा।"
+                        }
+                    ]
+                },
+                {
+                    id: 16,
+                    name: "मौसल पर्व",
+                    sanskritName: "Mausala Parva",
+                    chapters: 8,
+                    summary: "इस पर्व में यादवों के बीच हुए घातक युद्ध और कृष्ण के अंतिम दिनों का वर्णन है।",
+                    keyShlokas: [
+                        {
+                            text: "यादवाः क्रियवांस्तस्थुः\nसमुद्रे मत्स्यवत् नृप\nमद्यपानेन मोहिताः\nयुद्धं कुर्वन्ति निश्चितम्",
+                            meaning: "यादव, क्रिय (समुद्र) में मछलियों की तरह, मद्यपान से मोहित, निश्चित रूप से युद्ध करते हैं।"
+                        },
+                        {
+                            text: "बलरामः कृष्णश्चैव\nयादवेन्द्रौ महाबलौ\nअन्ते काले च ते द्वौ\nदिव्यं गच्छति शरीरम्",
+                            meaning: "बलराम और कृष्ण, यादवों के महान् नेता, अंत काल में दोनों, दिव्य शरीर छोड़कर जाते हैं।"
+                        }
+                    ]
+                },
+                {
+                    id: 17,
+                    name: "महाप्रस्थानिक पर्व",
+                    sanskritName: "Mahaprasthanika Parva",
+                    chapters: 3,
+                    summary: "इस पर्व में पांडवों का महाप्रस्थान (अंतिम यात्रा) और उनकी मृत्यु का वर्णन है।",
+                    keyShlokas: [
+                        {
+                            text: "पाण्डवाः द्रौपदी च\nमहाप्रस्थानं गच्छति\nहिमालयं प्रति गच्छन्ति\nमोक्षं प्राप्तुमिच्छवः",
+                            meaning: "पांडव और द्रौपदी, महाप्रस्थान को जाते हैं, हिमालय की ओर जाते हैं, मोक्ष प्राप्त करने इच्छुक।"
+                        },
+                        {
+                            text: "द्रौपदी पतिव्रता\nपतीनां सह गच्छति\nअन्ते स्वर्गं गच्छति\nपुण्यकर्मणा नर्यः",
+                            meaning: "द्रौपदी, पतिव्रता, पतियों के साथ जाती है, अंत में स्वर्ग जाती है, पुण्य कर्मों से नारी।"
+                        }
+                    ]
+                },
+                {
+                    id: 18,
+                    name: "स्वर्गारोहण पर्व",
+                    sanskritName: "Svargarohanika Parva",
+                    chapters: 5,
+                    summary: "यह महाभारत का अंतिम पर्व है जिसमें धर्मराज युधिष्ठिर का स्वर्ग यात्रा और उनके द्वारा अपने परिजनों को देखने का वर्णन है।",
+                    keyShlokas: [
+                        {
+                            text: "यत्र योगेश्वरः कृष्णो यत्र पार्थो धनुर्धरः\nतत्र श्रीर्विजयो भूतिर्ध्रुवा नीतिर्मतिर्मम",
+                            meaning: "जहाँ योगेश्वर भगवान कृष्ण और धनुर्धारी अर्जुन होते हैं, वहाँ श्री, विजय, धन, धर्म, नीति और मेरी मति निश्चित रूप से विद्यमान होती है।"
+                        },
+                        {
+                            text: "धर्मराजः युधिष्ठिरः\nस्वर्गं गच्छति धर्मवान्\nपरिजनान् दृष्ट्वा सर्वान्\nसुखी भवति नित्यदा",
+                            meaning: "धर्मराज युधिष्ठिर, धर्मवान्, स्वर्ग जाता है, सभी परिजनों को देखकर, सदा सुखी होता है।"
+                        }
+                    ]
+                }
+            ]
+        };
+
         // Initialize variables
         let currentPage = 0;
         let bookmarkedPage = 0;
         let audioEnabled = false;
         let yugMode = false;
         let isPlaying = false;
+        let currentParva = 1;
+        let currentChapter = 1;
+        let totalPages = 0;
 
         // Wait for DOM to load
         document.addEventListener('DOMContentLoaded', function() {
@@ -879,31 +1094,14 @@
                 document.getElementById('loadingScreen').classList.add('hidden');
             }, 2000);
 
-            // Initialize Turn.js
-            $('#magazine').turn({
-                width: 900,
-                height: 600,
-                autoCenter: true,
-                display: 'double',
-                acceleration: true,
-                elevation: 50,
-                gradients: true,
-                when: {
-                    turning: function(e, page, view) {
-                        currentPage = page;
-                        playPageFlipSound();
-                    },
-                    turned: function(e, page) {
-                        // Page turned event
-                    }
-                }
-            });
-
             // Create dust particles
             createDustParticles();
 
             // Setup event listeners
             setupEventListeners();
+
+            // Initialize the book
+            initializeBook();
         });
 
         // Create dust particles for ancient effect
@@ -933,31 +1131,209 @@
             }
         }
 
+        // Initialize the book with content
+        function initializeBook() {
+            const flipbook = document.getElementById('flipbook');
+            
+            // Add cover page
+            const coverPage = createPage('cover');
+            flipbook.appendChild(coverPage);
+            
+            // Add introduction page
+            const introPage = createPage('intro');
+            flipbook.appendChild(introPage);
+            
+            // Add pages for each parva
+            mahabharataData.parvas.forEach(parva => {
+                // Add parva title page
+                const parvaPage = createPage('parva', parva);
+                flipbook.appendChild(parvaPage);
+                
+                // Add pages for key shlokas
+                parva.keyShlokas.forEach((shloka, index) => {
+                    const shlokaPage = createPage('shloka', parva, shloka, index + 1);
+                    flipbook.appendChild(shlokaPage);
+                });
+            });
+            
+            // Add conclusion page
+            const conclusionPage = createPage('conclusion');
+            flipbook.appendChild(conclusionPage);
+            
+            // Calculate total pages
+            totalPages = flipbook.children.length;
+            
+            // Position pages
+            positionPages();
+        }
+
+        // Create a page element
+        function createPage(type, parva, shloka, shlokaNumber) {
+            const page = document.createElement('div');
+            page.classList.add('page');
+            
+            if (totalPages % 2 === 0) {
+                page.classList.add('right');
+            }
+            
+            const pageContent = document.createElement('div');
+            pageContent.classList.add('page-content');
+            
+            switch(type) {
+                case 'cover':
+                    pageContent.innerHTML = `
+                        <div class="page-header">
+                            <div class="page-title">महाभारत</div>
+                            <div class="page-subtitle">ज्ञान का अक्षय सागर</div>
+                        </div>
+                        <div class="shloka-container">
+                            <div class="shloka">
+                                ॐ नमो भगवते वासुदेवाय<br>
+                                नमः संतानवे नमः
+                            </div>
+                            <div class="meaning">
+                                महाभारत भगवान वेदव्यास द्वारा रचित एक महान ग्रंथ है,<br>
+                                जो धर्म, अर्थ, काम और मोक्ष के चारों पुरुषार्थों का वर्णन करता है।
+                            </div>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'intro':
+                    pageContent.innerHTML = `
+                        <div class="page-header">
+                            <div class="page-title">परिचय</div>
+                        </div>
+                        <div class="shloka-container">
+                            <div class="shloka">
+                                महाभारत में अठारह पर्व हैं,<br>
+                                जिनमें एक लाख श्लोकों का संग्रह है।
+                            </div>
+                            <div class="meaning">
+                                यह ग्रंथ कौरवों और पांडवों के बीच हुए धर्मयुद्ध का विस्तृत वर्णन करता है।<br>
+                                इसमें भगवान श्रीकृष्ण द्वारा अर्जुन को दिया गया भगवद्गीता का ज्ञान भी सम्मिलित है।
+                            </div>
+                            <button class="listen-btn" onclick="toggleAudio(this)">
+                                <i class="fas fa-headphones"></i> सुनें
+                            </button>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'parva':
+                    pageContent.innerHTML = `
+                        <div class="page-header">
+                            <div class="page-title">${parva.name}</div>
+                            <div class="page-subtitle">${parva.sanskritName}</div>
+                        </div>
+                        <div class="chapter-info">
+                            अध्याय: ${parva.chapters}
+                        </div>
+                        <div class="shloka-container">
+                            <div class="meaning">
+                                ${parva.summary}
+                            </div>
+                            <button class="listen-btn" onclick="toggleAudio(this)">
+                                <i class="fas fa-headphones"></i> सुनें
+                            </button>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'shloka':
+                    pageContent.innerHTML = `
+                        <div class="page-header">
+                            <div class="page-title">${parva.name}</div>
+                            <div class="page-subtitle">${parva.sanskritName}</div>
+                        </div>
+                        <div class="chapter-info">
+                            श्लोक: ${shlokaNumber}
+                        </div>
+                        <div class="shloka-container">
+                            <div class="shloka">
+                                ${shloka.text}
+                            </div>
+                            <div class="meaning">
+                                ${shloka.meaning}
+                            </div>
+                            <button class="listen-btn" onclick="toggleAudio(this)">
+                                <i class="fas fa-headphones"></i> सुनें
+                            </button>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'conclusion':
+                    pageContent.innerHTML = `
+                        <div class="page-header">
+                            <div class="page-title">समापन</div>
+                        </div>
+                        <div class="shloka-container">
+                            <div class="shloka">
+                                यत्र योगेश्वरः कृष्णो यत्र पार्थो धनुर्धरः<br>
+                                तत्र श्रीर्विजयो भूतिर्ध्रुवा नीतिर्मतिर्मम
+                            </div>
+                            <div class="meaning">
+                                जहाँ योगेश्वर भगवान कृष्ण और धनुर्धारी अर्जुन होते हैं,<br>
+                                वहाँ श्री, विजय, धन, धर्म, नीति और मेरी मति निश्चित रूप से विद्यमान होती है।
+                            </div>
+                            <button class="listen-btn" onclick="toggleAudio(this)">
+                                <i class="fas fa-headphones"></i> सुनें
+                            </button>
+                        </div>
+                    `;
+                    break;
+            }
+            
+            page.appendChild(pageContent);
+            return page;
+        }
+
+        // Position pages in 3D space
+        function positionPages() {
+            const pages = document.querySelectorAll('.page');
+            const angleStep = 360 / pages.length;
+            
+            pages.forEach((page, index) => {
+                if (index > 0) {
+                    page.style.transform = `rotateY(${index * angleStep}deg) translateZ(300px)`;
+                }
+            });
+        }
+
         // Setup all event listeners
         function setupEventListeners() {
             // Navigation buttons
             document.getElementById('prevBtn').addEventListener('click', () => {
-                $('#magazine').turn('previous');
+                if (currentPage > 0) {
+                    currentPage--;
+                    flipPage('prev');
+                }
             });
 
             document.getElementById('nextBtn').addEventListener('click', () => {
-                $('#magazine').turn('next');
+                if (currentPage < totalPages - 1) {
+                    currentPage++;
+                    flipPage('next');
+                }
             });
 
             // Parva selection
-            document.getElementById('parvaSelect').addEventListener('change', (e) => {
-                const selectedParva = parseInt(e.target.value);
-                if (selectedParva > 0) {
-                    $('#magazine').turn('page', selectedParva);
-                }
+            document.getElementById('parvaSelect').addEventListener('click', () => {
+                document.getElementById('chapterModal').style.display = 'block';
+                populateChapterList();
+            });
+
+            // Modal close button
+            document.querySelector('.close').addEventListener('click', () => {
+                document.getElementById('chapterModal').style.display = 'none';
             });
 
             // Search functionality
             document.getElementById('searchInput').addEventListener('input', (e) => {
                 const searchTerm = e.target.value.toLowerCase();
                 if (searchTerm.length > 2) {
-                    // In a real implementation, this would search through the content
-                    console.log('Searching for:', searchTerm);
+                    searchShlokas(searchTerm);
                 }
             });
 
@@ -972,7 +1348,8 @@
             document.getElementById('resumeBtn').addEventListener('click', () => {
                 const savedPage = localStorage.getItem('bookmarkedPage');
                 if (savedPage) {
-                    $('#magazine').turn('page', parseInt(savedPage));
+                    currentPage = parseInt(savedPage);
+                    goToPage(currentPage);
                 }
             });
 
@@ -994,43 +1371,145 @@
                 this.classList.toggle('active');
                 
                 if (yugMode) {
-                    document.body.style.background = 'linear-gradient(135deg, #2c1810, #1a0f08)';
+                    document.body.classList.add('dwapar-mode');
                     document.getElementById('templeBells').play();
                 } else {
-                    document.body.style.background = 'linear-gradient(135deg, #1a1a1a, #2c1810)';
+                    document.body.classList.remove('dwapar-mode');
                     document.getElementById('templeBells').pause();
                 }
-            });
-
-            // Listen buttons on pages
-            document.querySelectorAll('.listen-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    isPlaying = !isPlaying;
-                    this.classList.toggle('playing');
-                    
-                    if (isPlaying) {
-                        this.innerHTML = '<i class="fas fa-pause"></i> रोकें';
-                        // In a real implementation, this would play the audio for the specific shloka
-                        if (audioEnabled) {
-                            document.getElementById('backgroundMusic').volume = 0.3;
-                        }
-                    } else {
-                        this.innerHTML = '<i class="fas fa-headphones"></i> सुनें';
-                        if (audioEnabled) {
-                            document.getElementById('backgroundMusic').volume = 1;
-                        }
-                    }
-                });
             });
 
             // Keyboard navigation
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'ArrowLeft') {
-                    $('#magazine').turn('previous');
+                    if (currentPage > 0) {
+                        currentPage--;
+                        flipPage('prev');
+                    }
                 } else if (e.key === 'ArrowRight') {
-                    $('#magazine').turn('next');
+                    if (currentPage < totalPages - 1) {
+                        currentPage++;
+                        flipPage('next');
+                    }
                 }
             });
+        }
+
+        // Flip page animation
+        function flipPage(direction) {
+            const pages = document.querySelectorAll('.page');
+            const currentPageElement = pages[currentPage];
+            
+            if (direction === 'next') {
+                currentPageElement.classList.add('flipped');
+            } else {
+                const prevPageElement = pages[currentPage + 1];
+                if (prevPageElement) {
+                    prevPageElement.classList.remove('flipped');
+                }
+            }
+            
+            playPageFlipSound();
+        }
+
+        // Go to specific page
+        function goToPage(pageIndex) {
+            const pages = document.querySelectorAll('.page');
+            
+            for (let i = 0; i < pageIndex; i++) {
+                pages[i].classList.add('flipped');
+            }
+            
+            for (let i = pageIndex; i < pages.length; i++) {
+                pages[i].classList.remove('flipped');
+            }
+            
+            currentPage = pageIndex;
+        }
+
+        // Populate chapter list in modal
+        function populateChapterList() {
+            const chapterList = document.getElementById('chapterList');
+            chapterList.innerHTML = '';
+            
+            mahabharataData.parvas.forEach(parva => {
+                const chapterItem = document.createElement('li');
+                chapterItem.classList.add('chapter-item');
+                chapterItem.innerHTML = `
+                    <div class="chapter-title">${parva.name} (${parva.sanskritName})</div>
+                    <div class="chapter-subtitle">${parva.chapters} अध्याय</div>
+                `;
+                
+                chapterItem.addEventListener('click', () => {
+                    // Find the page index for this parva
+                    let pageIndex = 2; // Start after cover and intro
+                    
+                    for (let i = 0; i < mahabharataData.parvas.length; i++) {
+                        if (mahabharataData.parvas[i].id === parva.id) {
+                            break;
+                        }
+                        pageIndex += 1 + mahabharataData.parvas[i].keyShlokas.length;
+                    }
+                    
+                    goToPage(pageIndex);
+                    document.getElementById('chapterModal').style.display = 'none';
+                });
+                
+                chapterList.appendChild(chapterItem);
+            });
+        }
+
+        // Search shlokas
+        function searchShlokas(searchTerm) {
+            const results = [];
+            
+            mahabharataData.parvas.forEach(parva => {
+                parva.keyShlokas.forEach((shloka, index) => {
+                    if (shloka.text.toLowerCase().includes(searchTerm) || 
+                        shloka.meaning.toLowerCase().includes(searchTerm)) {
+                        results.push({
+                            parva: parva,
+                            shloka: shloka,
+                            index: index
+                        });
+                    }
+                });
+            });
+            
+            if (results.length > 0) {
+                // Find the page index for the first result
+                const firstResult = results[0];
+                let pageIndex = 2; // Start after cover and intro
+                
+                for (let i = 0; i < mahabharataData.parvas.length; i++) {
+                    if (mahabharataData.parvas[i].id === firstResult.parva.id) {
+                        pageIndex += 1 + firstResult.index;
+                        break;
+                    }
+                    pageIndex += 1 + mahabharataData.parvas[i].keyShlokas.length;
+                }
+                
+                goToPage(pageIndex);
+            }
+        }
+
+        // Toggle audio for shloka
+        function toggleAudio(button) {
+            isPlaying = !isPlaying;
+            button.classList.toggle('playing');
+            
+            if (isPlaying) {
+                button.innerHTML = '<i class="fas fa-pause"></i> रोकें';
+                // In a real implementation, this would play the audio for the specific shloka
+                if (audioEnabled) {
+                    document.getElementById('backgroundMusic').volume = 0.3;
+                }
+            } else {
+                button.innerHTML = '<i class="fas fa-headphones"></i> सुनें';
+                if (audioEnabled) {
+                    document.getElementById('backgroundMusic').volume = 1;
+                }
+            }
         }
 
         // Play page flip sound
