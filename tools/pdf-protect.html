@@ -3,302 +3,1060 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>सिक्योर पीडीएफ प्रो - आधुनिक सुरक्षा</title>
-    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <title>महाभारत ज्ञान ग्रंथ - Mahabharat Gyan Granth</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;500;700&family=Noto+Serif+Devanagari:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Turn.js for page flip animation -->
+    <script src="https://cdn.jsdelivr.net/npm/turn.js@1.4.2/lib/turn.min.js"></script>
+    
     <style>
-        /* --- Global Styles & Fonts --- */
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
-
         :root {
-            --primary-color: #667eea;
-            --secondary-color: #764ba2;
-            --success-color: #00b09b;
-            --error-color: #f44336;
-            --text-color: #333;
-            --bg-color: #f0f2f5;
+            --parchment: #f3e9d2;
+            --dark-parchment: #e8d9b5;
+            --gold: #d4af37;
+            --dark-gold: #b8941f;
+            --text-dark: #3a3020;
+            --text-light: #5a4a30;
+            --temple-red: #a62639;
+            --temple-orange: #e67e22;
         }
 
         * {
+            margin: 0;
+            padding: 0;
             box-sizing: border-box;
         }
 
         body {
-            font-family: 'Poppins', 'Nirmala UI', sans-serif;
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-            color: var(--text-color);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
+            font-family: 'Noto Sans Devanagari', sans-serif;
+            background: linear-gradient(135deg, #1a1a1a, #2c1810);
+            color: var(--text-dark);
             overflow-x: hidden;
+            position: relative;
+            min-height: 100vh;
         }
 
-        /* --- Main Container with Glassmorphism --- */
-        .main-container {
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(12px);
-            border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            padding: 40px;
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-            max-width: 500px;
+        /* Background Effects */
+        .background-container {
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .temple-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('https://picsum.photos/seed/ancient-temple/1920/1080.jpg') center/cover;
+            opacity: 0.15;
+            filter: sepia(0.5) blur(2px);
+        }
+
+        .dust-particles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .dust {
+            position: absolute;
+            background-color: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            opacity: 0;
+            animation: float 15s infinite;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) translateX(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.4;
+            }
+            90% {
+                opacity: 0.4;
+            }
+            100% {
+                transform: translateY(-100vh) translateX(100px);
+                opacity: 0;
+            }
+        }
+
+        /* Diya Animation */
+        .diya-container {
+            position: fixed;
+            bottom: 20px;
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .diya {
+            width: 60px;
+            height: 60px;
+            position: relative;
+        }
+
+        .diya-flame {
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 40px;
+            background: radial-gradient(ellipse at bottom, #ffeb3b 0%, #ff9800 50%, #ff5722 100%);
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            box-shadow: 0 0 20px 10px rgba(255, 152, 0, 0.8);
+            animation: flicker 1.5s infinite alternate;
+        }
+
+        @keyframes flicker {
+            0%, 100% {
+                transform: translateX(-50%) scale(1) rotate(-2deg);
+                box-shadow: 0 0 20px 10px rgba(255, 152, 0, 0.8);
+            }
+            50% {
+                transform: translateX(-50%) scale(1.1) rotate(2deg);
+                box-shadow: 0 0 25px 15px rgba(255, 152, 0, 0.9);
+            }
+        }
+
+        .diya-base {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 20px;
+            background: linear-gradient(to bottom, #8d6e63, #5d4037);
+            border-radius: 50% 50% 10% 10%;
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, var(--temple-red), var(--temple-orange));
+            color: white;
+            padding: 20px;
             text-align: center;
-            animation: fadeIn 0.8s ease-out;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* --- Card Content --- */
-        .card {
-            background: #ffffff;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 10;
         }
 
         h1 {
-            font-weight: 700;
-            color: var(--primary-color);
-            margin-bottom: 5px;
-            font-size: 2rem;
+            font-family: 'Noto Serif Devanagari', serif;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
         }
 
-        .subtitle {
-            color: #666;
-            margin-bottom: 25px;
-            font-size: 0.95rem;
+        .tagline {
+            font-style: italic;
+            font-size: 1.1rem;
+            opacity: 0.9;
         }
 
-        /* --- Input & Button Styling --- */
-        .input-group {
-            margin-bottom: 20px;
-            text-align: left;
-            position: relative;
+        /* Controls */
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.2);
+            flex-wrap: wrap;
         }
 
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            font-size: 0.9rem;
-        }
-
-        input[type="file"], input[type="password"] {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 16px;
-            font-family: 'Poppins', sans-serif;
-            transition: all 0.3s ease;
-        }
-        input[type="file"]:focus, input[type="password"]:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-
-        .action-button {
-            width: 100%;
-            padding: 14px 20px;
-            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
-            color: white;
+        .control-btn {
+            background: var(--gold);
+            color: var(--text-dark);
             border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
+            padding: 10px 20px;
+            border-radius: 30px;
             cursor: pointer;
+            font-weight: 500;
             transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-        .action-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
-        .action-button:disabled {
-            background: #cccccc;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        /* --- Status, Loader & Success Icon --- */
-        .status-container {
-            margin-top: 25px;
-            min-height: 50px;
+        .control-btn:hover {
+            background: var(--dark-gold);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .control-btn.active {
+            background: var(--temple-red);
+            color: white;
+        }
+
+        select, input[type="text"] {
+            padding: 10px 15px;
+            border-radius: 30px;
+            border: 2px solid var(--gold);
+            background: rgba(255, 255, 255, 0.9);
+            font-family: 'Noto Sans Devanagari', sans-serif;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        select:focus, input[type="text"]:focus {
+            border-color: var(--dark-gold);
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+        }
+
+        /* Book Container */
+        .book-container {
             display: flex;
             justify-content: center;
             align-items: center;
+            min-height: 600px;
+            padding: 40px 20px;
+            position: relative;
+        }
+
+        #magazine {
+            width: 100%;
+            max-width: 900px;
+            height: 600px;
+            position: relative;
+        }
+
+        .page {
+            background: var(--parchment);
+            background-image: 
+                linear-gradient(rgba(0,0,0,0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,0,0,0.05) 1px, transparent 1px);
+            background-size: 20px 20px;
+            border: 2px solid var(--dark-gold);
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .page::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('https://picsum.photos/seed/parchment-texture/900/600.jpg') center/cover;
+            opacity: 0.1;
+            pointer-events: none;
+        }
+
+        .page-content {
+            position: relative;
+            z-index: 1;
+            height: 100%;
+            display: flex;
             flex-direction: column;
         }
 
-        #status-message {
+        .page-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--gold);
+        }
+
+        .page-title {
+            font-family: 'Noto Serif Devanagari', serif;
+            font-size: 2rem;
+            color: var(--temple-red);
+            margin-bottom: 10px;
+        }
+
+        .page-subtitle {
+            font-size: 1.2rem;
+            color: var(--text-light);
+        }
+
+        .chapter-info {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+            color: var(--text-light);
+        }
+
+        .shloka-container {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .shloka {
+            font-family: 'Noto Serif Devanagari', serif;
+            font-size: 1.3rem;
+            line-height: 1.8;
+            text-align: center;
+            color: var(--text-dark);
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .shloka:hover {
+            background: rgba(255, 255, 255, 0.5);
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
+        }
+
+        .meaning {
+            font-size: 1.1rem;
+            color: var(--text-light);
+            font-style: italic;
+            text-align: center;
+            padding: 0 20px;
+        }
+
+        .listen-btn {
+            align-self: center;
+            background: var(--temple-orange);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 30px;
+            cursor: pointer;
             font-weight: 500;
-            font-size: 0.95rem;
-        }
-        .error { color: var(--error-color); }
-        .success { color: var(--success-color); }
-
-        .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid var(--primary-color);
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            display: none; /* Hidden by default */
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
         }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .listen-btn:hover {
+            background: var(--temple-red);
+            transform: scale(1.05);
         }
 
-        .success-icon {
+        .listen-btn.playing {
+            background: var(--temple-red);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(166, 38, 57, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(166, 38, 57, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(166, 38, 57, 0);
+            }
+        }
+
+        /* Navigation Arrows */
+        .nav-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--gold);
+            color: var(--text-dark);
             width: 50px;
             height: 50px;
-            display: none; /* Hidden by default */
-        }
-        .success-icon svg {
-            width: 100%;
-            height: 100%;
-            fill: var(--success-color);
-            animation: drawCheck 0.5s ease-out forwards;
-        }
-        @keyframes drawCheck {
-            from { stroke-dashoffset: 100; }
-            to { stroke-dashoffset: 0; }
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            z-index: 5;
         }
 
+        .nav-arrow:hover {
+            background: var(--dark-gold);
+            transform: translateY(-50%) scale(1.1);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+        }
+
+        .nav-arrow.prev {
+            left: 20px;
+        }
+
+        .nav-arrow.next {
+            right: 20px;
+        }
+
+        /* Yug Mode Toggle */
+        .yug-toggle {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 10px;
+            z-index: 10;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 60px;
+            height: 30px;
+            background: var(--gold);
+            border-radius: 30px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .toggle-switch.active {
+            background: var(--temple-red);
+        }
+
+        .toggle-slider {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+        }
+
+        .toggle-switch.active .toggle-slider {
+            transform: translateX(30px);
+        }
+
+        .yug-label {
+            color: white;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        /* Footer */
+        footer {
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            text-align: center;
+            padding: 20px;
+            margin-top: 40px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            .controls {
+                padding: 15px;
+                gap: 10px;
+            }
+
+            .control-btn {
+                padding: 8px 15px;
+                font-size: 0.9rem;
+            }
+
+            #magazine {
+                height: 500px;
+            }
+
+            .page {
+                padding: 20px;
+            }
+
+            .page-title {
+                font-size: 1.5rem;
+            }
+
+            .shloka {
+                font-size: 1.1rem;
+            }
+
+            .nav-arrow {
+                width: 40px;
+                height: 40px;
+            }
+        }
+
+        /* Loading Screen */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1a1a1a, #2c1810);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 0.5s ease;
+        }
+
+        .loading-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .om-symbol {
+            font-size: 4rem;
+            color: var(--gold);
+            animation: pulse 2s infinite;
+            margin-bottom: 20px;
+        }
+
+        .loading-text {
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        /* Bookmark Notification */
+        .bookmark-notification {
+            position: fixed;
+            top: 100px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-20px);
+            background: var(--gold);
+            color: var(--text-dark);
+            padding: 15px 30px;
+            border-radius: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+
+        .bookmark-notification.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
     </style>
 </head>
 <body>
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="om-symbol">ॐ</div>
+        <div class="loading-text">महाभारत ज्ञान ग्रंथ लोड हो रहा है...</div>
+    </div>
 
-    <div class="main-container">
-        <div class="card">
-            <h1>सिक्योर पीडीएफ प्रो</h1>
-            <p class="subtitle">अपनी पीडीएफ फाइल को एक मजबूत पासवर्ड के साथ सुरक्षित करें। 100% सुरक्षित और निजी।</p>
+    <!-- Background Effects -->
+    <div class="background-container">
+        <div class="temple-bg"></div>
+        <div class="dust-particles" id="dustParticles"></div>
+    </div>
 
-            <div class="input-group">
-                <label for="file-picker">📄 पीडीएफ फाइल चुनें:</label>
-                <input type="file" id="file-picker" accept=".pdf">
-            </div>
-
-            <div class="input-group">
-                <label for="password">🔒 नया पासवर्ड सेट करें:</label>
-                <input type="password" id="password" placeholder="एक मजबूत पासवर्ड डालें">
-            </div>
-
-            <button id="protect-button" class="action-button">पीडीएफ को सुरक्षित करें और डाउनलोड करें</button>
-
-            <div class="status-container">
-                <div id="loader" class="loader"></div>
-                <div id="success-icon" class="success-icon">
-                    <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-                </div>
-                <p id="status-message"></p>
-            </div>
+    <!-- Diya Animation -->
+    <div class="diya-container">
+        <div class="diya">
+            <div class="diya-flame"></div>
+            <div class="diya-base"></div>
+        </div>
+        <div class="diya">
+            <div class="diya-flame"></div>
+            <div class="diya-base"></div>
+        </div>
+        <div class="diya">
+            <div class="diya-flame"></div>
+            <div class="diya-base"></div>
         </div>
     </div>
 
+    <!-- Header -->
+    <header>
+        <h1>महाभारत ज्ञान ग्रंथ</h1>
+        <p class="tagline">महाभारत — केवल एक ग्रंथ नहीं, बल्कि समय के पार ज्ञान का दीप है।</p>
+    </header>
+
+    <!-- Controls -->
+    <div class="controls">
+        <select id="parvaSelect">
+            <option value="0">अध्याय चुनें</option>
+            <option value="1">आदि पर्व</option>
+            <option value="2">सभा पर्व</option>
+            <option value="3">वन पर्व</option>
+            <option value="4">विराट पर्व</option>
+            <option value="5">उद्योग पर्व</option>
+            <option value="6">भीष्म पर्व</option>
+            <option value="7">द्रोण पर्व</option>
+            <option value="8">कर्ण पर्व</option>
+            <option value="9">शल्य पर्व</option>
+            <option value="10">सौप्तिक पर्व</option>
+            <option value="11">स्त्री पर्व</option>
+            <option value="12">शांति पर्व</option>
+            <option value="13">अनुशासन पर्व</option>
+            <option value="14">अश्वमेध पर्व</option>
+            <option value="15">आश्रंवासिक पर्व</option>
+            <option value="16">मौसल पर्व</option>
+            <option value="17">महाप्रस्थानिक पर्व</option>
+            <option value="18">स्वर्गारोहण पर्व</option>
+        </select>
+
+        <input type="text" id="searchInput" placeholder="श्लोक खोजें...">
+
+        <button class="control-btn" id="bookmarkBtn">
+            <i class="fas fa-bookmark"></i> बुकमार्क
+        </button>
+
+        <button class="control-btn" id="resumeBtn">
+            <i class="fas fa-play"></i> पढ़ना जारी रखें
+        </button>
+
+        <button class="control-btn" id="audioToggle">
+            <i class="fas fa-volume-up"></i> ऑडियो
+        </button>
+    </div>
+
+    <!-- Yug Mode Toggle -->
+    <div class="yug-toggle">
+        <div class="yug-label">द्वापर युग मोड</div>
+        <div class="toggle-switch" id="yugToggle">
+            <div class="toggle-slider"></div>
+        </div>
+    </div>
+
+    <!-- Book Container -->
+    <div class="book-container">
+        <div class="nav-arrow prev" id="prevBtn">
+            <i class="fas fa-chevron-left"></i>
+        </div>
+        
+        <div id="magazine">
+            <!-- Page 1: Cover -->
+            <div class="page">
+                <div class="page-content">
+                    <div class="page-header">
+                        <div class="page-title">महाभारत</div>
+                        <div class="page-subtitle">ज्ञान का अक्षय सागर</div>
+                    </div>
+                    <div class="shloka-container">
+                        <div class="shloka">
+                            ॐ नमो भगवते वासुदेवाय<br>
+                            नमः संतानवे नमः
+                        </div>
+                        <div class="meaning">
+                            महाभारत भगवान वेदव्यास द्वारा रचित एक महान ग्रंथ है,<br>
+                            जो धर्म, अर्थ, काम और मोक्ष के चारों पुरुषार्थों का वर्णन करता है।
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Page 2: Introduction -->
+            <div class="page">
+                <div class="page-content">
+                    <div class="page-header">
+                        <div class="page-title">परिचय</div>
+                    </div>
+                    <div class="shloka-container">
+                        <div class="shloka">
+                            महाभारत में अठारह पर्व हैं,<br>
+                            जिनमें एक लाख श्लोकों का संग्रह है।
+                        </div>
+                        <div class="meaning">
+                            यह ग्रंथ कौरवों और पांडवों के बीच हुए धर्मयुद्ध का विस्तृत वर्णन करता है।<br>
+                            इसमें भगवान श्रीकृष्ण द्वारा अर्जुन को दिया गया भगवद्गीता का ज्ञान भी सम्मिलित है।
+                        </div>
+                        <button class="listen-btn">
+                            <i class="fas fa-headphones"></i> सुनें
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Page 3: Adi Parva -->
+            <div class="page">
+                <div class="page-content">
+                    <div class="page-header">
+                        <div class="page-title">आदि पर्व</div>
+                        <div class="page-subtitle">पहला खंड</div>
+                    </div>
+                    <div class="chapter-info">
+                        अध्याय: 1
+                    </div>
+                    <div class="shloka-container">
+                        <div class="shloka">
+                            नारायणं नमस्कृत्य नरं चैव नरोत्तमम्<br>
+                            देवीं सरस्वतीं चैव ततो जयमुदीरयेत्
+                        </div>
+                        <div class="meaning">
+                            नारायण को नमस्कार करके, नर और नरोत्तम को भी नमस्कार करके,<br>
+                            तथा सरस्वती देवी को भी नमस्कार करके, उसके बाद जय का उच्चारण करें।
+                        </div>
+                        <button class="listen-btn">
+                            <i class="fas fa-headphones"></i> सुनें
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Page 4: Sabha Parva -->
+            <div class="page">
+                <div class="page-content">
+                    <div class="page-header">
+                        <div class="page-title">सभा पर्व</div>
+                        <div class="page-subtitle">दूसरा खंड</div>
+                    </div>
+                    <div class="chapter-info">
+                        अध्याय: 5
+                    </div>
+                    <div class="shloka-container">
+                        <div class="shloka">
+                            धर्मश्च क्रियाश्च धृतिश्च लाभश्च लाभपुरुषाश्च<br>
+                            विज्ञानं विज्ञानं चैव धर्मश्च सत्यं च धृतिः
+                        </div>
+                        <div class="meaning">
+                            धर्म, कर्म, धैर्य, लाभ, लाभ के कारण, ज्ञान, विज्ञान,<br>
+                            सत्य और धैर्य - ये सभी गुण मनुष्य को सफल बनाते हैं।
+                        </div>
+                        <button class="listen-btn">
+                            <i class="fas fa-headphones"></i> सुनें
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Page 5: Bhishma Parva -->
+            <div class="page">
+                <div class="page-content">
+                    <div class="page-header">
+                        <div class="page-title">भीष्म पर्व</div>
+                        <div class="page-subtitle">छठा खंड</div>
+                    </div>
+                    <div class="chapter-info">
+                        अध्याय: 47
+                    </div>
+                    <div class="shloka-container">
+                        <div class="shloka">
+                            यदा यदा हि धर्मस्य ग्लानिर्भवति भारत<br>
+                            अभ्युत्थानमधर्मस्य तदात्मानं सृजाम्यहम्
+                        </div>
+                        <div class="meaning">
+                            जब-जब धर्म की हानि होती है और अधर्म की वृद्धि होती है,<br>
+                            तब-तब मैं अपने को उत्पन्न करता हूँ।
+                        </div>
+                        <button class="listen-btn">
+                            <i class="fas fa-headphones"></i> सुनें
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Page 6: Bhagavad Gita -->
+            <div class="page">
+                <div class="page-content">
+                    <div class="page-header">
+                        <div class="page-title">भगवद्गीता</div>
+                        <div class="page-subtitle">भीष्म पर्व में</div>
+                    </div>
+                    <div class="chapter-info">
+                        अध्याय: 2, श्लोक: 47
+                    </div>
+                    <div class="shloka-container">
+                        <div class="shloka">
+                            कर्मण्येवाधिकारस्ते मा फलेषु कदाचन<br>
+                            मा कर्मफलहेतुर्भूर्मा ते संगोऽस्त्वकर्मणि
+                        </div>
+                        <div class="meaning">
+                            तुम्हारा अधिकार केवल कर्म करने में है, फलों में कभी नहीं।<br>
+                            इसलिए तुम कर्म के फल को हेतु न बनो, अपने को कर्म में आसक्त भी मत करो।
+                        </div>
+                        <button class="listen-btn">
+                            <i class="fas fa-headphones"></i> सुनें
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Page 7: Shanti Parva -->
+            <div class="page">
+                <div class="page-content">
+                    <div class="page-header">
+                        <div class="page-title">शांति पर्व</div>
+                        <div class="page-subtitle">बारहवां खंड</div>
+                    </div>
+                    <div class="chapter-info">
+                        अध्याय: 58
+                    </div>
+                    <div class="shloka-container">
+                        <div class="shloka">
+                            अहिंसा परमो धर्मः धर्महिंसा तथैव च<br>
+                            सत्यं ब्रूयात् प्रियं ब्रूयात् न ब्रूयात् सत्यमप्रियम्
+                        </div>
+                        <div class="meaning">
+                            अहिंसा परम धर्म है, धर्म की रक्षा के लिए हिंसा भी धर्म है।<br>
+                            सत्य कहो, प्रिय कहो, परन्तु अप्रिय सत्य न कहो।
+                        </div>
+                        <button class="listen-btn">
+                            <i class="fas fa-headphones"></i> सुनें
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Page 8: Conclusion -->
+            <div class="page">
+                <div class="page-content">
+                    <div class="page-header">
+                        <div class="page-title">समापन</div>
+                    </div>
+                    <div class="shloka-container">
+                        <div class="shloka">
+                            यत्र योगेश्वरः कृष्णो यत्र पार्थो धनुर्धरः<br>
+                            तत्र श्रीर्विजयो भूतिर्ध्रुवा नीतिर्मतिर्मम
+                        </div>
+                        <div class="meaning">
+                            जहाँ योगेश्वर भगवान कृष्ण और धनुर्धारी अर्जुन होते हैं,<br>
+                            वहाँ श्री, विजय, धन, धर्म, नीति और मेरी मति निश्चित रूप से विद्यमान होती है।
+                        </div>
+                        <button class="listen-btn">
+                            <i class="fas fa-headphones"></i> सुनें
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="nav-arrow next" id="nextBtn">
+            <i class="fas fa-chevron-right"></i>
+        </div>
+    </div>
+
+    <!-- Bookmark Notification -->
+    <div class="bookmark-notification" id="bookmarkNotification">
+        <i class="fas fa-check-circle"></i> पृष्ठ बुकमार्क किया गया!
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>© 2023 महाभारत ज्ञान ग्रंथ | प्राचीन ज्ञान का आधुनिक माध्यम</p>
+    </footer>
+
+    <!-- Audio Elements -->
+    <audio id="pageFlipSound" preload="auto">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-book-page-flip-1157.mp3" type="audio/mpeg">
+    </audio>
+
+    <audio id="backgroundMusic" loop preload="auto">
+        <source src="https://assets.mixkit.co/music/preview/mixkit-indian-flute-meditation-210.mp3" type="audio/mpeg">
+    </audio>
+
+    <audio id="templeBells" preload="auto">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-temple-bell-sound-1159.mp3" type="audio/mpeg">
+    </audio>
+
     <script>
-        const { PDFDocument } = PDFLib;
-        const filePicker = document.getElementById('file-picker');
-        const passwordInput = document.getElementById('password');
-        const protectButton = document.getElementById('protect-button');
-        const statusMessage = document.getElementById('status-message');
-        const loader = document.getElementById('loader');
-        const successIcon = document.getElementById('success-icon');
+        // Initialize variables
+        let currentPage = 0;
+        let bookmarkedPage = 0;
+        let audioEnabled = false;
+        let yugMode = false;
+        let isPlaying = false;
 
-        function showState(state) {
-            // Reset all states first
-            protectButton.style.display = 'block';
-            loader.style.display = 'none';
-            successIcon.style.display = 'none';
-            statusMessage.textContent = '';
-            statusMessage.className = '';
-            protectButton.disabled = false;
+        // Wait for DOM to load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Hide loading screen after 2 seconds
+            setTimeout(() => {
+                document.getElementById('loadingScreen').classList.add('hidden');
+            }, 2000);
 
-            switch(state) {
-                case 'processing':
-                    protectButton.style.display = 'none';
-                    loader.style.display = 'block';
-                    statusMessage.textContent = 'प्रोसेसिंग हो रही है... कृपया प्रतीक्षा करें।';
-                    break;
-                case 'success':
-                    successIcon.style.display = 'block';
-                    statusMessage.textContent = 'सफलता! आपकी सुरक्षित पीडीएफ डाउनलोड हो गई है।';
-                    statusMessage.className = 'success';
-                    break;
-                case 'error':
-                    statusMessage.className = 'error';
-                    break;
+            // Initialize Turn.js
+            $('#magazine').turn({
+                width: 900,
+                height: 600,
+                autoCenter: true,
+                display: 'double',
+                acceleration: true,
+                elevation: 50,
+                gradients: true,
+                when: {
+                    turning: function(e, page, view) {
+                        currentPage = page;
+                        playPageFlipSound();
+                    },
+                    turned: function(e, page) {
+                        // Page turned event
+                    }
+                }
+            });
+
+            // Create dust particles
+            createDustParticles();
+
+            // Setup event listeners
+            setupEventListeners();
+        });
+
+        // Create dust particles for ancient effect
+        function createDustParticles() {
+            const dustContainer = document.getElementById('dustParticles');
+            const particleCount = 20;
+
+            for (let i = 0; i < particleCount; i++) {
+                const dust = document.createElement('div');
+                dust.classList.add('dust');
+                
+                // Random size
+                const size = Math.random() * 5 + 2;
+                dust.style.width = `${size}px`;
+                dust.style.height = `${size}px`;
+                
+                // Random position
+                dust.style.left = `${Math.random() * 100}%`;
+                
+                // Random animation delay
+                dust.style.animationDelay = `${Math.random() * 15}s`;
+                
+                // Random animation duration
+                dust.style.animationDuration = `${Math.random() * 10 + 15}s`;
+                
+                dustContainer.appendChild(dust);
             }
         }
 
-        protectButton.addEventListener('click', async () => {
-            const file = filePicker.files[0];
-            const password = passwordInput.value;
+        // Setup all event listeners
+        function setupEventListeners() {
+            // Navigation buttons
+            document.getElementById('prevBtn').addEventListener('click', () => {
+                $('#magazine').turn('previous');
+            });
 
-            if (!file || !password) {
-                statusMessage.textContent = 'कृपया एक फाइल और पासवर्ड दोनों चुनें।';
-                statusMessage.className = 'error';
-                return;
-            }
+            document.getElementById('nextBtn').addEventListener('click', () => {
+                $('#magazine').turn('next');
+            });
 
-            showState('processing');
+            // Parva selection
+            document.getElementById('parvaSelect').addEventListener('change', (e) => {
+                const selectedParva = parseInt(e.target.value);
+                if (selectedParva > 0) {
+                    $('#magazine').turn('page', selectedParva);
+                }
+            });
 
-            try {
-                const existingPdfBytes = await file.arrayBuffer();
-                const pdfDoc = await PDFDocument.load(existingPdfBytes);
+            // Search functionality
+            document.getElementById('searchInput').addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+                if (searchTerm.length > 2) {
+                    // In a real implementation, this would search through the content
+                    console.log('Searching for:', searchTerm);
+                }
+            });
+
+            // Bookmark button
+            document.getElementById('bookmarkBtn').addEventListener('click', () => {
+                bookmarkedPage = currentPage;
+                localStorage.setItem('bookmarkedPage', bookmarkedPage);
+                showBookmarkNotification();
+            });
+
+            // Resume reading button
+            document.getElementById('resumeBtn').addEventListener('click', () => {
+                const savedPage = localStorage.getItem('bookmarkedPage');
+                if (savedPage) {
+                    $('#magazine').turn('page', parseInt(savedPage));
+                }
+            });
+
+            // Audio toggle
+            document.getElementById('audioToggle').addEventListener('click', function() {
+                audioEnabled = !audioEnabled;
+                this.classList.toggle('active');
                 
-                const pdfBytes = await pdfDoc.save({
-                    useObjectStreams: false,
-                    updateFieldAppearances: false,
-                    encrypt: {
-                        userPassword: password,
-                        ownerPassword: password,
-                        permissions: {
-                            printing: 'highResolution',
-                            modifying: false,
-                            copying: false,
-                            annotating: false,
-                            fillingForms: false,
+                if (audioEnabled) {
+                    document.getElementById('backgroundMusic').play();
+                } else {
+                    document.getElementById('backgroundMusic').pause();
+                }
+            });
+
+            // Yug mode toggle
+            document.getElementById('yugToggle').addEventListener('click', function() {
+                yugMode = !yugMode;
+                this.classList.toggle('active');
+                
+                if (yugMode) {
+                    document.body.style.background = 'linear-gradient(135deg, #2c1810, #1a0f08)';
+                    document.getElementById('templeBells').play();
+                } else {
+                    document.body.style.background = 'linear-gradient(135deg, #1a1a1a, #2c1810)';
+                    document.getElementById('templeBells').pause();
+                }
+            });
+
+            // Listen buttons on pages
+            document.querySelectorAll('.listen-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    isPlaying = !isPlaying;
+                    this.classList.toggle('playing');
+                    
+                    if (isPlaying) {
+                        this.innerHTML = '<i class="fas fa-pause"></i> रोकें';
+                        // In a real implementation, this would play the audio for the specific shloka
+                        if (audioEnabled) {
+                            document.getElementById('backgroundMusic').volume = 0.3;
+                        }
+                    } else {
+                        this.innerHTML = '<i class="fas fa-headphones"></i> सुनें';
+                        if (audioEnabled) {
+                            document.getElementById('backgroundMusic').volume = 1;
                         }
                     }
                 });
+            });
 
-                const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-                const url = URL.createObjectURL(blob);
-                
-                // Robust download logic
-                const a = document.createElement('a');
-                a.style.display = 'none';
-                a.href = url;
-                a.download = `protected-${file.name}`;
-                document.body.appendChild(a);
-                a.click();
-                
-                // Clean up
-                window.URL.revokeObjectURL(url);
-                document.body.removeChild(a);
+            // Keyboard navigation
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowLeft') {
+                    $('#magazine').turn('previous');
+                } else if (e.key === 'ArrowRight') {
+                    $('#magazine').turn('next');
+                }
+            });
+        }
 
-                showState('success');
+        // Play page flip sound
+        function playPageFlipSound() {
+            const pageFlipSound = document.getElementById('pageFlipSound');
+            pageFlipSound.currentTime = 0;
+            pageFlipSound.play().catch(e => console.log('Audio play failed:', e));
+        }
 
-            } catch (err) {
-                console.error(err);
-                statusMessage.textContent = 'एक त्रुटि हुई: ' + err.message;
-                showState('error');
+        // Show bookmark notification
+        function showBookmarkNotification() {
+            const notification = document.getElementById('bookmarkNotification');
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Check for saved bookmark on load
+        window.addEventListener('load', () => {
+            const savedPage = localStorage.getItem('bookmarkedPage');
+            if (savedPage) {
+                bookmarkedPage = parseInt(savedPage);
             }
         });
     </script>
-
 </body>
 </html>
