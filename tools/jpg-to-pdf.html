@@ -3,1812 +3,1219 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image to PDF Converter - Professional Tool</title>
-    <meta name="description" content="Convert JPG/PNG images to PDF instantly with our professional browser-based tool. Batch convert, reorder, and customize your PDFs with ease.">
-    <meta name="keywords" content="image to pdf, jpg to pdf, png to pdf, converter, free, online">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>MediTrack Pro - Real Time Medicine Tracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Firebase SDK - Alternative URLs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+    
+    <!-- QR Code Scanner -->
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    
     <style>
+        * {
+            font-family: 'Poppins', sans-serif;
+        }
+        
         :root {
             --primary: #6366f1;
             --primary-dark: #4f46e5;
-            --secondary: #a78bfa;
-            --accent: #f59e0b;
+            --secondary: #8b5cf6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
             --dark: #1e293b;
             --light: #f8fafc;
-            --glass: rgba(255, 255, 255, 0.1);
-            --glass-border: rgba(255, 255, 255, 0.2);
         }
-        
-        [data-theme="dark"] {
-            --light: #1e293b;
-            --dark: #f8fafc;
-            --glass: rgba(30, 41, 59, 0.5);
-            --glass-border: rgba(30, 41, 59, 0.3);
-        }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
+
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            transition: all 0.3s ease;
-            color: var(--dark);
         }
-        
-        [data-theme="dark"] body {
-            background: linear-gradient(135deg, #1a1c2e 0%, #2d3561 100%);
-        }
-        
-        .glass {
-            background: var(--glass);
+
+        .glass-morphism {
+            background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid var(--glass-border);
-            border-radius: 16px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.18);
         }
-        
-        .drop-zone {
-            border: 2px dashed var(--primary);
-            background: rgba(99, 102, 241, 0.05);
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
+
+        .gradient-bg {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
         }
-        
-        .drop-zone.drag-over {
-            background: rgba(99, 102, 241, 0.2);
-            border-color: var(--primary-dark);
-            transform: scale(1.02);
+
+        .card-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        
-        .image-item {
-            transition: all 0.3s ease;
-            cursor: move;
-            position: relative;
-            user-select: none;
-            -webkit-user-select: none;
-            touch-action: none;
-        }
-        
-        .image-item:hover {
+
+        .card-hover:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
         }
-        
-        .image-item.dragging {
-            opacity: 0.5;
-            transform: scale(1.05);
-            z-index: 1000;
+
+        .pulse-animation {
+            animation: pulse 2s infinite;
         }
-        
-        .image-item.long-press {
-            animation: pulse 1s infinite;
-        }
-        
+
         @keyframes pulse {
             0% { transform: scale(1); }
             50% { transform: scale(1.05); }
             100% { transform: scale(1); }
         }
-        
-        .sortable-ghost {
-            opacity: 0.4;
-            background: var(--primary);
+
+        .slide-in {
+            animation: slideIn 0.5s ease-out;
         }
-        
-        .drag-handle {
-            position: absolute;
-            top: 5px;
-            left: 5px;
-            background: var(--primary);
-            color: white;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .floating-action {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 1000;
+        }
+
+        .notification-toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            min-width: 300px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.3s;
+        }
+
+        .modal.show {
             display: flex;
             align-items: center;
             justify-content: center;
-            cursor: grab;
-            z-index: 10;
-            opacity: 0;
-            transition: opacity 0.3s ease;
         }
-        
-        .image-item:hover .drag-handle,
-        .drag-handle.active {
-            opacity: 1;
-        }
-        
-        .drag-handle:active {
-            cursor: grabbing;
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            color: white;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            border: none;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
-        }
-        
-        .btn-secondary {
-            background: var(--glass);
-            color: var(--dark);
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            border: 1px solid var(--glass-border);
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .btn-secondary:hover {
-            background: var(--glass-border);
-            transform: translateY(-2px);
-        }
-        
-        .btn-icon {
-            background: var(--glass);
-            color: white;
-            width: 32px;
-            height: 32px;
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: 1px solid var(--glass-border);
-        }
-        
-        .btn-icon:hover {
-            background: var(--primary);
-            transform: scale(1.1);
-        }
-        
-        .preview-container {
+
+        .modal-content {
             background: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
+            padding: 2rem;
+            border-radius: 1rem;
+            max-width: 500px;
+            width: 90%;
+            animation: slideIn 0.3s;
+        }
+
+        .scanner-container {
             position: relative;
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
         }
-        
-        [data-theme="dark"] .preview-container {
-            background: #2d3561;
+
+        .scanner-frame {
+            position: relative;
+            width: 100%;
+            padding-bottom: 100%;
+            background: #000;
+            border-radius: 1rem;
+            overflow: hidden;
         }
-        
-        .preview-page {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 400px;
-            padding: 20px;
-        }
-        
-        .preview-nav {
+
+        .scanner-line {
             position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 10px;
-            z-index: 10;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #00ff00, transparent);
+            animation: scan 2s linear infinite;
         }
-        
-        .preview-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: rgba(0, 0, 0, 0.3);
-            cursor: pointer;
+
+        @keyframes scan {
+            0% { top: 0; }
+            100% { top: 100%; }
+        }
+
+        .drop-zone {
+            border: 2px dashed #cbd5e1;
+            border-radius: 1rem;
+            padding: 3rem;
+            text-align: center;
             transition: all 0.3s ease;
+            cursor: pointer;
         }
-        
-        .preview-dot.active {
-            background: var(--primary);
-            transform: scale(1.3);
+
+        .drop-zone:hover {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.05);
         }
-        
+
+        .drop-zone.dragover {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.1);
+        }
+
         .loading-spinner {
-            border: 3px solid rgba(255, 255, 255, 0.3);
+            border: 4px solid rgba(0, 0, 0, 0.1);
             border-radius: 50%;
-            border-top: 3px solid white;
+            border-top: 4px solid var(--primary);
             width: 40px;
             height: 40px;
             animation: spin 1s linear infinite;
         }
-        
+
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        
-        .fade-in {
-            animation: fadeIn 0.5s ease-in;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .slide-in {
-            animation: slideIn 0.3s ease-out;
-        }
-        
-        @keyframes slideIn {
-            from { transform: translateX(-100%); }
-            to { transform: translateX(0); }
-        }
-        
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-        
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.1);
-            border-radius: 10px;
-        }
-        
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: var(--primary);
-            border-radius: 10px;
-        }
-        
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: var(--primary-dark);
-        }
-        
-        .toggle-switch {
-            position: relative;
-            width: 60px;
-            height: 30px;
-            background: var(--glass);
-            border-radius: 15px;
-            cursor: pointer;
+
+        .btn-gradient {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
             transition: all 0.3s ease;
         }
-        
-        .toggle-switch::after {
-            content: '';
-            position: absolute;
-            width: 26px;
-            height: 26px;
-            background: white;
-            border-radius: 50%;
-            top: 2px;
-            left: 2px;
+
+        .btn-gradient:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+        }
+
+        .input-modern {
             transition: all 0.3s ease;
+            border: 2px solid transparent;
         }
-        
-        .toggle-switch.active {
-            background: var(--primary);
+
+        .input-modern:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
         }
-        
-        .toggle-switch.active::after {
-            transform: translateX(30px);
-        }
-        
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-        }
-        
-        .modal.active {
-            opacity: 1;
-            pointer-events: auto;
-        }
-        
-        .modal-content {
-            background: white;
-            border-radius: 16px;
-            padding: 24px;
-            max-width: 90%;
-            max-height: 90%;
-            transform: scale(0.9);
-            transition: transform 0.3s ease;
-            overflow: auto;
-        }
-        
-        .modal.active .modal-content {
-            transform: scale(1);
-        }
-        
-        [data-theme="dark"] .modal-content {
-            background: var(--dark);
-        }
-        
-        .crop-container {
-            position: relative;
-            display: inline-block;
-            margin: 20px auto;
-            cursor: crosshair;
-            max-width: 100%;
-            overflow: hidden;
-            border: 1px solid #ddd;
-        }
-        
-        .crop-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-        }
-        
-        .crop-box {
-            position: absolute;
-            border: 2px dashed var(--primary);
-            background: rgba(99, 102, 241, 0.1);
-            pointer-events: none;
-        }
-        
-        .crop-handle {
-            position: absolute;
-            width: 10px;
-            height: 10px;
-            background: var(--primary);
-            border: 2px solid white;
-            border-radius: 50%;
-            pointer-events: auto;
-            cursor: pointer;
-        }
-        
-        .crop-handle.nw { top: -5px; left: -5px; cursor: nw-resize; }
-        .crop-handle.ne { top: -5px; right: -5px; cursor: ne-resize; }
-        .crop-handle.sw { bottom: -5px; left: -5px; cursor: sw-resize; }
-        .crop-handle.se { bottom: -5px; right: -5px; cursor: se-resize; }
-        .crop-handle.n { top: -5px; left: 50%; transform: translateX(-50%); cursor: n-resize; }
-        .crop-handle.s { bottom: -5px; left: 50%; transform: translateX(-50%); cursor: s-resize; }
-        .crop-handle.w { left: -5px; top: 50%; transform: translateY(-50%); cursor: w-resize; }
-        .crop-handle.e { right: -5px; top: 50%; transform: translateY(-50%); cursor: e-resize; }
-        
-        .rotate-controls {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            margin-top: 20px;
-        }
-        
-        .slider-container {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin: 20px 0;
-        }
-        
-        .slider {
-            flex: 1;
-            -webkit-appearance: none;
-            height: 6px;
-            border-radius: 3px;
-            background: var(--glass-border);
-            outline: none;
-        }
-        
-        .slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            background: var(--primary);
-            cursor: pointer;
-        }
-        
-        .slider::-moz-range-thumb {
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            background: var(--primary);
-            cursor: pointer;
-        }
-        
-        .image-preview {
-            max-width: 100%;
-            max-height: 400px;
-            display: block;
-            margin: 0 auto;
-        }
-        
-        .edited-badge {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            background: var(--accent);
-            color: white;
-            font-size: 10px;
-            padding: 2px 6px;
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            gap: 2px;
-        }
-        
-        #pdfCanvas {
-            max-width: 100%;
-            max-height: 500px;
-            display: block;
-            margin: 0 auto;
-            border: 1px solid #ddd;
-        }
-        
-        .reorder-buttons {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 5px;
-        }
-        
-        .reorder-btn {
-            background: var(--glass);
-            color: white;
-            width: 24px;
-            height: 24px;
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
+
+        .badge-modern {
+            padding: 4px 12px;
+            border-radius: 20px;
             font-size: 12px;
-            transition: all 0.3s ease;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
-        
-        .reorder-btn:hover {
-            background: var(--primary);
+
+        .hidden {
+            display: none !important;
         }
-        
-        .file-input-wrapper {
-            position: relative;
-            overflow: hidden;
-            display: inline-block;
+
+        .page {
+            display: none;
         }
-        
-        .file-input-wrapper input[type=file] {
-            position: absolute;
-            left: -9999px;
+
+        .page.active {
+            display: block;
         }
-        
-        .file-input-label {
-            display: inline-block;
-            cursor: pointer;
+
+        .firebase-status {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            z-index: 10000;
         }
-        
+
+        .firebase-status.connected {
+            background: rgba(16, 185, 129, 0.8);
+        }
+
+        .firebase-status.error {
+            background: rgba(239, 68, 68, 0.8);
+        }
+
         @media (max-width: 768px) {
-            .container {
-                padding: 10px;
+            .sidebar-mobile {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
             }
             
-            .glass {
-                border-radius: 12px;
-            }
-            
-            .btn-primary, .btn-secondary {
-                padding: 10px 16px;
-                font-size: 14px;
+            .sidebar-mobile.open {
+                transform: translateX(0);
             }
         }
     </style>
 </head>
-<body data-theme="light">
-    <div class="container mx-auto px-4 py-8 max-w-7xl">
-        <!-- Header -->
-        <header class="glass p-6 mb-8 fade-in">
-            <div class="flex justify-between items-center">
-                <div>
-                    <h1 class="text-3xl font-bold text-white mb-2">
-                        <i class="fas fa-file-pdf mr-2"></i>Image to PDF Converter
-                    </h1>
-                    <p class="text-white/80">Convert your images to professional PDF documents instantly</p>
+<body>
+    <!-- Firebase Status Indicator -->
+    <div id="firebaseStatus" class="firebase-status">
+        <i class="fas fa-circle-notch fa-spin mr-2"></i>
+        <span id="firebaseStatusText">Initializing Firebase...</span>
+    </div>
+
+    <div id="app" class="min-h-screen">
+        <!-- Loading Screen -->
+        <div id="loadingScreen" class="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600">
+            <div class="text-center">
+                <div class="loading-spinner mx-auto mb-4"></div>
+                <h2 class="text-white text-xl font-semibold">Loading MediTrack Pro...</h2>
+                <p class="text-white/80 mt-2">Please wait while we set up your dashboard</p>
+                <div class="mt-4">
+                    <div class="bg-white/20 rounded-full h-2 w-64 mx-auto">
+                        <div id="loadingProgress" class="bg-white h-2 rounded-full" style="width: 0%"></div>
+                    </div>
                 </div>
-                <div class="flex items-center gap-4">
-                    <button id="themeToggle" class="text-white hover:text-yellow-300 transition-colors">
-                        <i class="fas fa-moon text-2xl"></i>
+            </div>
+        </div>
+
+        <!-- Firebase Setup Screen (if Firebase is not configured) -->
+        <div id="firebaseSetupScreen" class="min-h-screen flex items-center justify-center p-4 fade-in hidden">
+            <div class="glass-morphism rounded-3xl p-8 w-full max-w-2xl slide-in">
+                <div class="text-center mb-8">
+                    <div class="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl mb-4 pulse-animation">
+                        <i class="fas fa-database text-white text-3xl"></i>
+                    </div>
+                    <h1 class="text-3xl font-bold text-gray-800 mb-2">Firebase Setup Required</h1>
+                    <p class="text-gray-600">Please configure Firebase to use this application</p>
+                </div>
+
+                <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-6">
+                    <h3 class="text-lg font-semibold text-yellow-800 mb-2">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>
+                        Firebase Configuration Missing
+                    </h3>
+                    <p class="text-yellow-700 text-sm">
+                        Your Firebase configuration is not properly set up. Please follow the steps below to configure Firebase.
+                    </p>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="bg-gray-50 rounded-xl p-4">
+                        <h3 class="font-semibold text-gray-800 mb-2">Step 1: Create Firebase Project</h3>
+                        <ol class="text-sm text-gray-600 space-y-1 list-decimal list-inside">
+                            <li>Go to <a href="https://console.firebase.google.com/" target="_blank" class="text-blue-600 hover:underline">Firebase Console</a></li>
+                            <li>Click "Add project" and enter project name</li>
+                            <li>Click "Create project"</li>
+                        </ol>
+                    </div>
+
+                    <div class="bg-gray-50 rounded-xl p-4">
+                        <h3 class="font-semibold text-gray-800 mb-2">Step 2: Get Configuration</h3>
+                        <ol class="text-sm text-gray-600 space-y-1 list-decimal list-inside">
+                            <li>In Firebase Console, click "Project Settings"</li>
+                            <li>Under "Your apps", click "Web" icon (</>)</li>
+                            <li>Enter app nickname and click "Register app"</li>
+                            <li>Copy the Firebase configuration</li>
+                        </ol>
+                    </div>
+
+                    <div class="bg-gray-50 rounded-xl p-4">
+                        <h3 class="font-semibold text-gray-800 mb-2">Step 3: Update Configuration</h3>
+                        <p class="text-sm text-gray-600 mb-2">
+                            Replace the firebaseConfig object in the code with your configuration:
+                        </p>
+                        <div class="bg-gray-800 text-green-400 p-3 rounded-lg text-xs font-mono">
+                            const firebaseConfig = {<br>
+                            &nbsp;&nbsp;apiKey: "YOUR_API_KEY",<br>
+                            &nbsp;&nbsp;authDomain: "your-app.firebaseapp.com",<br>
+                            &nbsp;&nbsp;projectId: "your-app",<br>
+                            &nbsp;&nbsp;storageBucket: "your-app.appspot.com",<br>
+                            &nbsp;&nbsp;messagingSenderId: "123456789",<br>
+                            &nbsp;&nbsp;appId: "1:123456789:web:abcdef"<br>
+                            };
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 rounded-xl p-4">
+                        <h3 class="font-semibold text-gray-800 mb-2">Step 4: Enable Services</h3>
+                        <ol class="text-sm text-gray-600 space-y-1 list-decimal list-inside">
+                            <li>Enable Authentication (Email/Password and Google)</li>
+                            <li>Create Firestore Database</li>
+                            <li>Enable Storage</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <div class="flex justify-center mt-6">
+                    <button onclick="location.reload()" class="btn-gradient px-6 py-3 rounded-xl text-white font-semibold">
+                        <i class="fas fa-sync mr-2"></i>
+                        Reload After Setup
                     </button>
                 </div>
             </div>
-        </header>
+        </div>
 
-        <!-- Main Content -->
-        <main class="grid lg:grid-cols-3 gap-8">
-            <!-- Left Panel - Upload & Settings -->
-            <div class="lg:col-span-1 space-y-6">
-                <!-- Upload Area -->
-                <section class="glass p-6 fade-in">
-                    <h2 class="text-xl font-semibold mb-4 text-white">
-                        <i class="fas fa-upload mr-2"></i>Upload Images
-                    </h2>
-                    <div id="dropZone" class="drop-zone p-8 text-center rounded-lg cursor-pointer">
-                        <i class="fas fa-cloud-upload-alt text-4xl text-white mb-4"></i>
-                        <p class="text-white mb-2">Drag & drop your images here</p>
-                        <p class="text-white/70 text-sm mb-4">or</p>
-                        <div class="file-input-wrapper">
-                            <input type="file" id="fileInput" accept="image/*" multiple>
-                            <label for="fileInput" class="file-input-label btn-secondary">
-                                <i class="fas fa-folder-open mr-2"></i>Browse Files
-                            </label>
-                        </div>
-                        <p class="text-white/60 text-xs mt-4">Supports JPG, PNG, GIF, BMP</p>
+        <!-- Login Screen -->
+        <div id="loginScreen" class="min-h-screen flex items-center justify-center p-4 fade-in hidden">
+            <div class="glass-morphism rounded-3xl p-8 w-full max-w-md slide-in">
+                <div class="text-center mb-8">
+                    <div class="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl mb-4 pulse-animation">
+                        <i class="fas fa-pills text-white text-3xl"></i>
                     </div>
-                </section>
+                    <h1 class="text-3xl font-bold text-gray-800 mb-2">MediTrack Pro</h1>
+                    <p class="text-gray-600">Your Smart Medicine Management System</p>
+                </div>
 
-                <!-- Settings -->
-                <section class="glass p-6 fade-in">
-                    <h2 class="text-xl font-semibold mb-4 text-white">
-                        <i class="fas fa-cog mr-2"></i>PDF Settings
-                    </h2>
-                    
-                    <div class="space-y-4">
-                        <!-- Page Size -->
-                        <div>
-                            <label class="block text-white mb-2">Page Size</label>
-                            <select id="pageSize" class="w-full p-2 rounded-lg bg-white/20 text-white border border-white/30">
-                                <option value="a0">A0 (841 x 1189 mm)</option>
-                                <option value="a1">A1 (594 x 841 mm)</option>
-                                <option value="a2">A2 (420 x 594 mm)</option>
-                                <option value="a3">A3 (297 x 420 mm)</option>
-                                <option value="a4" selected>A4 (210 x 297 mm)</option>
-                                <option value="a5">A5 (148 x 210 mm)</option>
-                                <option value="a6">A6 (105 x 148 mm)</option>
-                                <option value="letter">Letter (8.5 x 11 inches)</option>
-                                <option value="legal">Legal (8.5 x 14 inches)</option>
-                                <option value="tabloid">Tabloid (11 x 17 inches)</option>
-                                <option value="executive">Executive (7.25 x 10.5 inches)</option>
-                            </select>
-                        </div>
-                        
-                        <!-- Orientation -->
-                        <div>
-                            <label class="block text-white mb-2">Orientation</label>
-                            <div class="flex gap-4">
-                                <label class="flex items-center text-white cursor-pointer">
-                                    <input type="radio" name="orientation" value="portrait" checked class="mr-2">
-                                    <i class="fas fa-file mr-1"></i>Portrait
-                                </label>
-                                <label class="flex items-center text-white cursor-pointer">
-                                    <input type="radio" name="orientation" value="landscape" class="mr-2">
-                                    <i class="fas fa-file-alt mr-1"></i>Landscape
-                                </label>
-                            </div>
-                        </div>
-                        
-                        <!-- Margins -->
-                        <div>
-                            <label class="block text-white mb-2">Margins (mm)</label>
-                            <input type="range" id="margin" min="0" max="50" value="10" class="w-full">
-                            <span id="marginValue" class="text-white/70 text-sm">10mm</span>
-                        </div>
-                        
-                        <!-- Quality -->
-                        <div>
-                            <label class="block text-white mb-2">Image Quality</label>
-                            <input type="range" id="quality" min="0.1" max="1" step="0.1" value="0.9" class="w-full">
-                            <span id="qualityValue" class="text-white/70 text-sm">90%</span>
-                        </div>
-                        
-                        <!-- Watermark -->
-                        <div>
-                            <label class="flex items-center text-white cursor-pointer">
-                                <input type="checkbox" id="addWatermark" class="mr-2">
-                                <span>Add Watermark</span>
-                            </label>
-                            <input type="text" id="watermarkText" placeholder="Enter watermark text" class="w-full mt-2 p-2 rounded-lg bg-white/20 text-white border border-white/30 hidden">
+                <form id="loginForm" class="space-y-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                        <div class="relative">
+                            <input type="email" id="loginEmail" required
+                                class="input-modern w-full px-4 py-3 pl-12 rounded-xl border border-gray-200 focus:outline-none"
+                                placeholder="john@example.com">
+                            <i class="fas fa-envelope absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                         </div>
                     </div>
-                </section>
 
-                <!-- Actions -->
-                <section class="glass p-6 fade-in">
-                    <div class="space-y-3">
-                        <button id="convertBtn" class="btn-primary w-full">
-                            <i class="fas fa-magic mr-2"></i>Convert to PDF
-                        </button>
-                        <button id="clearBtn" class="btn-secondary w-full">
-                            <i class="fas fa-trash mr-2"></i>Clear All
-                        </button>
-                    </div>
-                </section>
-            </div>
-
-            <!-- Right Panel - Image List -->
-            <div class="lg:col-span-2 space-y-6">
-                <!-- Image List -->
-                <section class="glass p-6 fade-in">
-                    <h2 class="text-xl font-semibold mb-4 text-white">
-                        <i class="fas fa-images mr-2"></i>Images (<span id="imageCount">0</span>)
-                    </h2>
-                    <div id="imageList" class="grid grid-cols-2 md:grid-cols-3 gap-4 max-h-96 overflow-y-auto custom-scrollbar">
-                        <!-- Images will be added here dynamically -->
-                    </div>
-                    <div id="emptyState" class="text-center py-12 text-white/60">
-                        <i class="fas fa-inbox text-4xl mb-4"></i>
-                        <p>No images uploaded yet</p>
-                    </div>
-                </section>
-
-                <!-- Preview -->
-                <section class="glass p-6 fade-in">
-                    <h2 class="text-xl font-semibold mb-4 text-white">
-                        <i class="fas fa-eye mr-2"></i>PDF Preview
-                    </h2>
-                    <div id="previewContainer" class="preview-container min-h-[400px]">
-                        <div id="previewContent" class="preview-page">
-                            <div class="text-center text-gray-400">
-                                <i class="fas fa-file-pdf text-6xl mb-4"></i>
-                                <p>PDF preview will appear here</p>
-                                <p class="text-sm mt-2">Convert images to see preview</p>
-                            </div>
-                        </div>
-                        <div id="previewNav" class="preview-nav hidden">
-                            <!-- Navigation dots will be added here -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                        <div class="relative">
+                            <input type="password" id="loginPassword" required
+                                class="input-modern w-full px-4 py-3 pl-12 pr-12 rounded-xl border border-gray-200 focus:outline-none"
+                                placeholder="••••••••">
+                            <i class="fas fa-lock absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                            <button type="button" onclick="togglePassword('loginPassword')"
+                                class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                <i class="fas fa-eye"></i>
+                            </button>
                         </div>
                     </div>
-                </section>
 
-                <!-- Download Section -->
-                <section id="downloadSection" class="glass p-6 fade-in hidden">
-                    <h2 class="text-xl font-semibold mb-4 text-white">
-                        <i class="fas fa-download mr-2"></i>Download PDF
-                    </h2>
-                    <div class="flex gap-4 items-center">
-                        <input type="text" id="fileName" placeholder="Enter file name" value="converted-document" class="flex-1 p-2 rounded-lg bg-white/20 text-white border border-white/30">
-                        <button id="downloadBtn" class="btn-primary">
-                            <i class="fas fa-download mr-2"></i>Download
-                        </button>
+                    <div class="flex items-center justify-between">
+                        <label class="flex items-center">
+                            <input type="checkbox" class="rounded text-indigo-600">
+                            <span class="ml-2 text-sm text-gray-600">Remember me</span>
+                        </label>
+                        <a href="#" class="text-sm text-indigo-600 hover:text-indigo-800">Forgot password?</a>
                     </div>
-                </section>
-            </div>
-        </main>
 
-        <!-- Footer -->
-        <footer class="glass p-6 mt-8 text-center text-white/80 fade-in">
-            <p>&copy; 2024 Image to PDF Converter. All rights reserved.</p>
-            <p class="text-sm mt-2">Powered by client-side technology - No server required</p>
-        </footer>
-    </div>
+                    <button type="submit" 
+                        class="btn-gradient w-full py-3 rounded-xl text-white font-semibold">
+                        Sign In
+                    </button>
 
-    <!-- Rotate Modal -->
-    <div id="rotateModal" class="modal">
-        <div class="modal-content">
-            <h3 class="text-xl font-semibold mb-4 text-white">Rotate Image</h3>
-            <div class="crop-container">
-                <img id="rotateImage" src="" alt="Image to rotate" class="image-preview">
-            </div>
-            <div class="slider-container">
-                <label class="text-white">Angle:</label>
-                <input type="range" id="rotationSlider" class="slider" min="-180" max="180" value="0">
-                <span id="rotationValue" class="text-white">0°</span>
-            </div>
-            <div class="rotate-controls">
-                <button id="rotate90" class="btn-secondary">
-                    <i class="fas fa-redo mr-2"></i>90°
-                </button>
-                <button id="rotate180" class="btn-secondary">
-                    <i class="fas fa-redo mr-2"></i>180°
-                </button>
-                <button id="rotate270" class="btn-secondary">
-                    <i class="fas fa-redo mr-2"></i>270°
-                </button>
-            </div>
-            <div class="flex gap-2 mt-4">
-                <button id="applyRotation" class="btn-primary flex-1">
-                    <i class="fas fa-check mr-2"></i>Apply
-                </button>
-                <button id="cancelRotation" class="btn-secondary flex-1">
-                    <i class="fas fa-times mr-2"></i>Cancel
-                </button>
+                    <div class="relative">
+                        <div class="absolute inset-0 flex items-center">
+                            <div class="w-full border-t border-gray-300"></div>
+                        </div>
+                        <div class="relative flex justify-center text-sm">
+                            <span class="px-2 bg-white text-gray-500">Or continue with</span>
+                        </div>
+                    </div>
+
+                    <button type="button" onclick="googleLogin()"
+                        class="w-full flex items-center justify-center px-4 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition">
+                        <i class="fab fa-google text-red-500 mr-2"></i>
+                        Google
+                    </button>
+
+                    <p class="text-center text-sm text-gray-600">
+                        Don't have an account? 
+                        <a href="#" onclick="showSignup()" class="text-indigo-600 hover:text-indigo-800 font-semibold">Sign up</a>
+                    </p>
+                </form>
             </div>
         </div>
-    </div>
 
-    <!-- Crop Modal -->
-    <div id="cropModal" class="modal">
-        <div class="modal-content">
-            <h3 class="text-xl font-semibold mb-4 text-white">Crop Image</h3>
-            <div class="crop-container" id="cropContainer">
-                <canvas id="cropCanvas" class="image-preview"></canvas>
-                <div class="crop-overlay">
-                    <div id="cropBox" class="crop-box" style="display: none;">
-                        <div class="crop-handle nw"></div>
-                        <div class="crop-handle ne"></div>
-                        <div class="crop-handle sw"></div>
-                        <div class="crop-handle se"></div>
-                        <div class="crop-handle n"></div>
-                        <div class="crop-handle s"></div>
-                        <div class="crop-handle w"></div>
-                        <div class="crop-handle e"></div>
+        <!-- Main App -->
+        <div id="mainApp" class="hidden">
+            <!-- Header -->
+            <header class="glass-morphism fixed top-0 left-0 right-0 z-50 shadow-lg">
+                <div class="px-4 sm:px-6 lg:px-8">
+                    <div class="flex items-center justify-between h-16">
+                        <div class="flex items-center">
+                            <button onclick="toggleSidebar()" class="md:hidden p-2 rounded-lg hover:bg-gray-100">
+                                <i class="fas fa-bars text-gray-600"></i>
+                            </button>
+                            <div class="flex items-center ml-4">
+                                <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
+                                    <i class="fas fa-pills text-white"></i>
+                                </div>
+                                <span class="ml-3 text-xl font-bold text-gray-800">MediTrack Pro</span>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center space-x-4">
+                            <button class="relative p-2 rounded-lg hover:bg-gray-100">
+                                <i class="fas fa-bell text-gray-600"></i>
+                                <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                            </button>
+                            
+                            <div class="relative">
+                                <button onclick="toggleUserMenu()" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100">
+                                    <img id="userAvatar" src="https://picsum.photos/seed/user/40/40" alt="Avatar" class="w-8 h-8 rounded-full">
+                                    <i class="fas fa-chevron-down text-gray-600 text-xs"></i>
+                                </button>
+                                <div id="userMenu" class="hidden absolute right-0 mt-2 w-48 glass-morphism rounded-xl shadow-xl">
+                                    <div class="p-4 border-b">
+                                        <p id="userName" class="font-semibold text-gray-800">User</p>
+                                        <p id="userEmail" class="text-sm text-gray-600">user@example.com</p>
+                                    </div>
+                                    <button onclick="logout()" class="w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
+                                        <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="flex gap-2 mt-4">
-                <button id="applyCrop" class="btn-primary flex-1">
-                    <i class="fas fa-check mr-2"></i>Apply
-                </button>
-                <button id="cancelCrop" class="btn-secondary flex-1">
-                    <i class="fas fa-times mr-2"></i>Cancel
-                </button>
-            </div>
-        </div>
-    </div>
+            </header>
 
-    <!-- Loading Overlay -->
-    <div id="loadingOverlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 hidden">
-        <div class="glass p-8 text-center">
-            <div class="loading-spinner mx-auto mb-4"></div>
-            <p class="text-white">Processing your images...</p>
+            <!-- Sidebar -->
+            <aside id="sidebar" class="sidebar-mobile md:translate-x-0 fixed left-0 top-16 bottom-0 w-64 glass-morphism z-40">
+                <nav class="p-4 space-y-2">
+                    <a href="#" onclick="showPage('dashboard')" class="sidebar-item active flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-gray-100">
+                        <i class="fas fa-home w-5"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="#" onclick="showPage('add')" class="sidebar-item flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-gray-100">
+                        <i class="fas fa-plus-circle w-5"></i>
+                        <span>Add Medicine</span>
+                    </a>
+                    <a href="#" onclick="showPage('scan')" class="sidebar-item flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-gray-100">
+                        <i class="fas fa-qrcode w-5"></i>
+                        <span>Scan Medicine</span>
+                    </a>
+                    <a href="#" onclick="showPage('inventory')" class="sidebar-item flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-gray-100">
+                        <i class="fas fa-boxes w-5"></i>
+                        <span>Inventory</span>
+                    </a>
+                    <a href="#" onclick="showPage('reminders')" class="sidebar-item flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-gray-100">
+                        <i class="fas fa-bell w-5"></i>
+                        <span>Reminders</span>
+                    </a>
+                    <a href="#" onclick="showPage('reports')" class="sidebar-item flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-gray-100">
+                        <i class="fas fa-chart-bar w-5"></i>
+                        <span>Reports</span>
+                    </a>
+                </nav>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="md:ml-64 pt-16 p-6">
+                <!-- Dashboard Page -->
+                <div id="dashboardPage" class="page active">
+                    <div class="mb-8">
+                        <h1 class="text-3xl font-bold text-white mb-2">Welcome back, <span id="dashboardUserName">User</span>! 👋</h1>
+                        <p class="text-white/80">Here's your medicine overview</p>
+                    </div>
+
+                    <!-- Stats Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                        <div class="stat-card glass-morphism rounded-2xl p-6 card-hover">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                                    <i class="fas fa-pills text-blue-600 text-xl"></i>
+                                </div>
+                                <span id="totalMedicines" class="text-2xl font-bold text-gray-800">0</span>
+                            </div>
+                            <p class="text-gray-600 text-sm">Total Medicines</p>
+                            <div class="mt-2 flex items-center text-green-600 text-xs">
+                                <i class="fas fa-arrow-up mr-1"></i>
+                                <span>Live data</span>
+                            </div>
+                        </div>
+
+                        <div class="stat-card glass-morphism rounded-2xl p-6 card-hover">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="w-12 h-12 bg-yellow-100 rounded-xl flex items-center justify-center">
+                                    <i class="fas fa-exclamation-triangle text-yellow-600 text-xl"></i>
+                                </div>
+                                <span id="expiringSoon" class="text-2xl font-bold text-gray-800">0</span>
+                            </div>
+                            <p class="text-gray-600 text-sm">Expiring Soon</p>
+                            <div class="mt-2 flex items-center text-yellow-600 text-xs">
+                                <i class="fas fa-clock mr-1"></i>
+                                <span>Within 30 days</span>
+                            </div>
+                        </div>
+
+                        <div class="stat-card glass-morphism rounded-2xl p-6 card-hover">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center">
+                                    <i class="fas fa-times-circle text-red-600 text-xl"></i>
+                                </div>
+                                <span id="expiredCount" class="text-2xl font-bold text-gray-800">0</span>
+                            </div>
+                            <p class="text-gray-600 text-sm">Expired</p>
+                            <div class="mt-2 flex items-center text-red-600 text-xs">
+                                <i class="fas fa-exclamation mr-1"></i>
+                                <span>Needs attention</span>
+                            </div>
+                        </div>
+
+                        <div class="stat-card glass-morphism rounded-2xl p-6 card-hover">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                                    <i class="fas fa-box-open text-green-600 text-xl"></i>
+                                </div>
+                                <span id="lowStockCount" class="text-2xl font-bold text-gray-800">0</span>
+                            </div>
+                            <p class="text-gray-600 text-sm">Low Stock</p>
+                            <div class="mt-2 flex items-center text-orange-600 text-xs">
+                                <i class="fas fa-box mr-1"></i>
+                                <span>Below 10 units</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Medicines -->
+                    <div class="glass-morphism rounded-2xl p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <h2 class="text-xl font-semibold text-gray-800">Recent Medicines</h2>
+                            <button onclick="showPage('inventory')" class="text-indigo-600 hover:text-indigo-800 font-medium">
+                                View All <i class="fas fa-arrow-right ml-1"></i>
+                            </button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-gradient-to-r from-indigo-500 to-purple-600 text-white">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Medicine</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Brand</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Stock</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Expires</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recentMedicinesTable" class="bg-white divide-y divide-gray-200">
+                                    <tr>
+                                        <td colspan="5" class="px-6 py-4 text-center text-gray-500">
+                                            No medicines added yet. Click "Add Medicine" to get started.
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Add Medicine Page -->
+                <div id="addPage" class="page">
+                    <div class="mb-8">
+                        <h1 class="text-3xl font-bold text-white mb-2">Add New Medicine</h1>
+                        <p class="text-white/80">Enter medicine details to track expiry</p>
+                    </div>
+
+                    <div class="glass-morphism rounded-2xl p-8">
+                        <form id="addMedicineForm" class="space-y-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Medicine Name *</label>
+                                    <input type="text" id="medicineName" required
+                                        class="input-modern w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none"
+                                        placeholder="e.g., Paracetamol">
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Brand</label>
+                                    <input type="text" id="medicineBrand"
+                                        class="input-modern w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none"
+                                        placeholder="e.g., Tylenol">
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                                    <select id="medicineCategory"
+                                        class="input-modern w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none">
+                                        <option value="">Select Category</option>
+                                        <option value="pain">Pain Relief</option>
+                                        <option value="antibiotic">Antibiotic</option>
+                                        <option value="vitamin">Vitamin</option>
+                                        <option value="chronic">Chronic Disease</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Quantity</label>
+                                    <input type="number" id="medicineQuantity" min="1"
+                                        class="input-modern w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none"
+                                        placeholder="e.g., 30">
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Batch Number</label>
+                                    <input type="text" id="medicineBatch"
+                                        class="input-modern w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none"
+                                        placeholder="e.g., B12345">
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Manufacturing Date</label>
+                                    <input type="date" id="medicineMfg"
+                                        class="input-modern w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none">
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Expiry Date *</label>
+                                    <input type="date" id="medicineExp" required
+                                        class="input-modern w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none">
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Storage Location</label>
+                                    <input type="text" id="medicineLocation"
+                                        class="input-modern w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none"
+                                        placeholder="e.g., Cabinet A, Shelf 2">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Notes</label>
+                                <textarea id="medicineNotes" rows="3"
+                                    class="input-modern w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none"
+                                    placeholder="Additional notes..."></textarea>
+                            </div>
+
+                            <div class="flex justify-end space-x-4">
+                                <button type="button" onclick="showPage('dashboard')"
+                                    class="px-6 py-3 rounded-xl border border-gray-300 text-gray-700 hover:bg-gray-50">
+                                    Cancel
+                                </button>
+                                <button type="submit"
+                                    class="btn-gradient px-6 py-3 rounded-xl text-white font-semibold">
+                                    Add Medicine
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Other pages would be here -->
+                
+            </main>
+
+            <!-- Floating Action Button -->
+            <div class="floating-action">
+                <button onclick="showPage('add')" class="w-14 h-14 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full shadow-lg flex items-center justify-center text-white hover:scale-110 transition-transform">
+                    <i class="fas fa-plus text-xl"></i>
+                </button>
+            </div>
         </div>
+
+        <!-- Notification Container -->
+        <div id="notificationContainer" class="notification-toast"></div>
     </div>
 
     <script>
-        // Set up PDF.js worker
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        // ⚠️ IMPORTANT: यहाँ अपनी Firebase Configuration डालें
+        // Firebase Configuration - अपनी config से replace करें
+        // Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
 
-        // Global variables
-        let uploadedImages = [];
-        let pdfDoc = null;
-        let currentImageIndex = 0;
-        let isDarkMode = false;
-        let currentEditingImage = null;
-        let cropData = null;
-        let rotationAngle = 0;
-        let isDragging = false;
-        let isResizing = false;
-        let resizeHandle = null;
-        let originalImageSrc = null;
-        let cropCanvas = null;
-        let cropCtx = null;
-        let cropImage = null;
-        let draggedElement = null;
-        let touchOffset = { x: 0, y: 0 };
-        let longPressTimer = null;
-        let isLongPress = false;
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyBKfYLh4ls0hkAA0Z_rWecsBGC8c-M5ap0",
+  authDomain: "meditrack-pro-d1bcb.firebaseapp.com",
+  projectId: "meditrack-pro-d1bcb",
+  storageBucket: "meditrack-pro-d1bcb.firebasestorage.app",
+  messagingSenderId: "1094157817611",
+  appId: "1:1094157817611:web:510097edc85b295fd9b40e",
+  measurementId: "G-77YZQNJX9J"
+};
 
-        // Initialize
-        document.addEventListener('DOMContentLoaded', () => {
-            initializeEventListeners();
-            loadFromLocalStorage();
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+        // Check if Firebase is properly configured
+        function isFirebaseConfigured() {
+            return firebaseConfig.apiKey !== "AIzaSyYOUR_API_KEY" && 
+                   firebaseConfig.projectId !== "your-app";
+        }
+
+        // Initialize Firebase with error handling
+        let firebase, auth, db, storage;
+        
+        function initializeFirebase() {
+            try {
+                if (!isFirebaseConfigured()) {
+                    throw new Error("Firebase configuration is missing");
+                }
+                
+                firebase = window.firebase;
+                firebase.initializeApp(firebaseConfig);
+                auth = firebase.auth();
+                db = firebase.firestore();
+                storage = firebase.storage();
+                
+                updateFirebaseStatus('Connected', 'connected');
+                return true;
+            } catch (error) {
+                console.error('Firebase initialization error:', error);
+                updateFirebaseStatus('Error: ' + error.message, 'error');
+                return false;
+            }
+        }
+
+        // Update Firebase status indicator
+        function updateFirebaseStatus(message, type) {
+            const statusElement = document.getElementById('firebaseStatus');
+            const statusTextElement = document.getElementById('firebaseStatusText');
+            
+            statusElement.className = `firebase-status ${type}`;
+            statusTextElement.textContent = message;
+            
+            if (type === 'error') {
+                setTimeout(() => {
+                    statusElement.style.display = 'none';
+                }, 5000);
+            }
+        }
+
+        // App State
+        const app = {
+            user: null,
+            medicines: [],
+            currentPage: 'dashboard',
+            firebaseInitialized: false
+        };
+
+        // Initialize App
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('App initializing...');
+            
+            // Update loading progress
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                progress += 10;
+                document.getElementById('loadingProgress').style.width = progress + '%';
+                
+                if (progress >= 100) {
+                    clearInterval(progressInterval);
+                    
+                    // Try to initialize Firebase
+                    if (initializeFirebase()) {
+                        app.firebaseInitialized = true;
+                        setupFirebaseListeners();
+                    } else {
+                        // Show Firebase setup screen
+                        document.getElementById('loadingScreen').classList.add('hidden');
+                        document.getElementById('firebaseSetupScreen').classList.remove('hidden');
+                        return;
+                    }
+                }
+            }, 200);
         });
 
-        // Event Listeners
-        function initializeEventListeners() {
-            // Theme toggle
-            document.getElementById('themeToggle').addEventListener('click', toggleTheme);
-            
-            // File upload - Fixed for mobile
-            const dropZone = document.getElementById('dropZone');
-            const fileInput = document.getElementById('fileInput');
-            
-            fileInput.addEventListener('change', handleFileSelect);
-            
-            // Drag and drop
-            dropZone.addEventListener('dragover', handleDragOver);
-            dropZone.addEventListener('dragleave', handleDragLeave);
-            dropZone.addEventListener('drop', handleDrop);
-            
-            // Touch events for mobile - Fixed
-            dropZone.addEventListener('touchstart', handleTouchStart, { passive: false });
-            dropZone.addEventListener('touchmove', handleTouchMove, { passive: false });
-            dropZone.addEventListener('touchend', handleTouchEnd);
-            
-            // Settings
-            document.getElementById('margin').addEventListener('input', updateMarginValue);
-            document.getElementById('quality').addEventListener('input', updateQualityValue);
-            document.getElementById('addWatermark').addEventListener('change', toggleWatermark);
-            
-            // Actions
-            document.getElementById('convertBtn').addEventListener('click', convertToPDF);
-            document.getElementById('clearBtn').addEventListener('click', clearAll);
-            document.getElementById('downloadBtn').addEventListener('click', downloadPDF);
-            
-            // Rotate modal
-            document.getElementById('rotationSlider').addEventListener('input', updateRotationValue);
-            document.getElementById('rotate90').addEventListener('click', () => setRotation(90));
-            document.getElementById('rotate180').addEventListener('click', () => setRotation(180));
-            document.getElementById('rotate270').addEventListener('click', () => setRotation(270));
-            document.getElementById('applyRotation').addEventListener('click', applyRotation);
-            document.getElementById('cancelRotation').addEventListener('click', closeRotationModal);
-            
-            // Crop modal
-            document.getElementById('applyCrop').addEventListener('click', applyCrop);
-            document.getElementById('cancelCrop').addEventListener('click', closeCropModal);
-        }
-
-        // Theme toggle
-        function toggleTheme() {
-            isDarkMode = !isDarkMode;
-            document.body.setAttribute('data-theme', isDarkMode ? 'dark' : 'light');
-            const icon = document.querySelector('#themeToggle i');
-            icon.className = isDarkMode ? 'fas fa-sun text-2xl' : 'fas fa-moon text-2xl';
-            localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
-        }
-
-        // File handling
-        function handleFileSelect(e) {
-            const files = Array.from(e.target.files);
-            processFiles(files);
-        }
-
-        function handleDragOver(e) {
-            e.preventDefault();
-            e.currentTarget.classList.add('drag-over');
-        }
-
-        function handleDragLeave(e) {
-            e.currentTarget.classList.remove('drag-over');
-        }
-
-        function handleDrop(e) {
-            e.preventDefault();
-            e.currentTarget.classList.remove('drag-over');
-            const files = Array.from(e.dataTransfer.files);
-            processFiles(files);
-        }
-
-        // Touch events for mobile - Fixed
-        function handleTouchStart(e) {
-            e.preventDefault();
-            const touch = e.touches[0];
-            const mouseEvent = new MouseEvent('dragover', {
-                clientX: touch.clientX,
-                clientY: touch.clientY
-            });
-            e.currentTarget.dispatchEvent(mouseEvent);
-        }
-
-        function handleTouchMove(e) {
-            e.preventDefault();
-            const touch = e.touches[0];
-            const mouseEvent = new MouseEvent('dragover', {
-                clientX: touch.clientX,
-                clientY: touch.clientY
-            });
-            e.currentTarget.dispatchEvent(mouseEvent);
-        }
-
-        function handleTouchEnd(e) {
-            e.preventDefault();
-            const touch = e.changedTouches[0];
-            const mouseEvent = new MouseEvent('drop', {
-                clientX: touch.clientX,
-                clientY: touch.clientY
-            });
-            e.currentTarget.dispatchEvent(mouseEvent);
-        }
-
-        function processFiles(files) {
-            const imageFiles = files.filter(file => file.type.startsWith('image/'));
-            
-            // Check if adding these files would exceed the limit
-            if (uploadedImages.length + imageFiles.length > 10000) {
-                showNotification('Cannot add more than 10,000 images', 'error');
-                return;
-            }
-            
-            imageFiles.forEach(file => {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const img = new Image();
-                    img.onload = () => {
-                        uploadedImages.push({
-                            id: Date.now() + Math.random(),
-                            name: file.name,
-                            src: e.target.result,
-                            width: img.width,
-                            height: img.height,
-                            file: file,
-                            rotation: 0,
-                            crop: null,
-                            edited: false
-                        });
-                        updateImageList();
-                        saveToLocalStorage();
-                    };
-                    img.src = e.target.result;
-                };
-                reader.readAsDataURL(file);
-            });
-        }
-
-        // Image list management
-        function updateImageList() {
-            const imageList = document.getElementById('imageList');
-            const emptyState = document.getElementById('emptyState');
-            const imageCount = document.getElementById('imageCount');
-            
-            imageCount.textContent = uploadedImages.length;
-            
-            if (uploadedImages.length === 0) {
-                imageList.innerHTML = '';
-                emptyState.style.display = 'block';
-                return;
-            }
-            
-            emptyState.style.display = 'none';
-            
-            imageList.innerHTML = uploadedImages.map((img, index) => `
-                <div class="image-item glass p-2 relative group" data-id="${img.id}" data-index="${index}">
-                    <div class="drag-handle">
-                        <i class="fas fa-grip-vertical"></i>
-                    </div>
-                    <img src="${img.src}" alt="${img.name}" class="w-full h-32 object-cover rounded">
-                    ${img.edited ? '<div class="edited-badge"><i class="fas fa-edit"></i> Edited</div>' : ''}
-                    <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded flex items-center justify-center gap-2">
-                        <button onclick="removeImage(${img.id})" class="text-white hover:text-red-400 transition-colors">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                        <button onclick="openRotateModal(${index})" class="text-white hover:text-blue-400 transition-colors">
-                            <i class="fas fa-sync-alt"></i>
-                        </button>
-                        <button onclick="openCropModal(${index})" class="text-white hover:text-green-400 transition-colors">
-                            <i class="fas fa-crop"></i>
-                        </button>
-                    </div>
-                    <div class="text-white text-xs mt-1 truncate">${img.name}</div>
-                    <div class="reorder-buttons">
-                        <button class="reorder-btn" onclick="moveImage(${index}, -1)" ${index === 0 ? 'disabled' : ''}>
-                            <i class="fas fa-chevron-up"></i>
-                        </button>
-                        <button class="reorder-btn" onclick="moveImage(${index}, 1)" ${index === uploadedImages.length - 1 ? 'disabled' : ''}>
-                            <i class="fas fa-chevron-down"></i>
-                        </button>
-                    </div>
-                </div>
-            `).join('');
-            
-            // Initialize drag functionality
-            initializeDrag();
-        }
-
-        function removeImage(id) {
-            uploadedImages = uploadedImages.filter(img => img.id !== id);
-            updateImageList();
-            saveToLocalStorage();
-        }
-
-        // Move image up or down
-        function moveImage(index, direction) {
-            const newIndex = index + direction;
-            
-            // Check if the new index is valid
-            if (newIndex < 0 || newIndex >= uploadedImages.length) {
-                return;
-            }
-            
-            // Swap the images
-            const temp = uploadedImages[index];
-            uploadedImages[index] = uploadedImages[newIndex];
-            uploadedImages[newIndex] = temp;
-            
-            // Update the image list
-            updateImageList();
-            saveToLocalStorage();
-        }
-
-        // Drag functionality - Fixed for PC
-        function initializeDrag() {
-            const imageList = document.getElementById('imageList');
-            
-            // Initialize Sortable for PC drag functionality
-            new Sortable(imageList, {
-                animation: 150,
-                ghostClass: 'sortable-ghost',
-                handle: '.drag-handle',
-                onEnd: function(evt) {
-                    const items = Array.from(imageList.children);
-                    const newOrder = items.map(item => {
-                        const index = parseInt(item.getAttribute('data-index'));
-                        return uploadedImages[index];
-                    });
-                    uploadedImages = newOrder;
-                    saveToLocalStorage();
-                }
-            });
-            
-            // Mobile drag functionality
-            const imageItems = document.querySelectorAll('.image-item');
-            const dragHandles = document.querySelectorAll('.drag-handle');
-            
-            // Touch events for drag handles
-            dragHandles.forEach(handle => {
-                handle.addEventListener('touchstart', handleTouchDragStart, { passive: false });
-            });
-            
-            // Global touch events
-            document.addEventListener('touchmove', handleTouchDragMove, { passive: false });
-            document.addEventListener('touchend', handleTouchDragEnd);
-        }
-
-        function handleTouchDragStart(e) {
-            if (e.target.closest('button')) return;
-            
-            e.preventDefault();
-            
-            draggedElement = e.currentTarget.closest('.image-item');
-            
-            // Start long press timer
-            longPressTimer = setTimeout(() => {
-                isLongPress = true;
-                draggedElement.classList.add('long-press');
+        // Setup Firebase listeners
+        function setupFirebaseListeners() {
+            // Firebase auth state listener
+            auth.onAuthStateChanged(user => {
+                console.log('Auth state changed:', user ? 'User logged in' : 'User logged out');
                 
-                // Vibrate if available
-                if (navigator.vibrate) {
-                    navigator.vibrate(50);
+                if (user) {
+                    app.user = user;
+                    console.log('User:', user);
+                    loadUserData();
+                    showMainApp();
+                } else {
+                    showLoginScreen();
                 }
+            });
+
+            // Setup event listeners
+            setupEventListeners();
+            
+            // Hide loading screen
+            setTimeout(() => {
+                document.getElementById('loadingScreen').classList.add('hidden');
             }, 500);
         }
 
-        function handleTouchDragMove(e) {
-            if (!draggedElement) return;
+        // Show Login Screen
+        function showLoginScreen() {
+            console.log('Showing login screen');
+            document.getElementById('loadingScreen').classList.add('hidden');
+            document.getElementById('firebaseSetupScreen').classList.add('hidden');
+            document.getElementById('loginScreen').classList.remove('hidden');
+            document.getElementById('mainApp').classList.add('hidden');
+        }
+
+        // Show Main App
+        function showMainApp() {
+            console.log('Showing main app');
+            document.getElementById('loadingScreen').classList.add('hidden');
+            document.getElementById('firebaseSetupScreen').classList.add('hidden');
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('mainApp').classList.remove('hidden');
+            updateUserInterface();
+            showPage('dashboard');
+        }
+
+        // Load User Data from Firebase
+        async function loadUserData() {
+            if (!app.firebaseInitialized) return;
             
-            e.preventDefault();
-            
-            // If it's a long press, allow dragging
-            if (isLongPress) {
-                const touch = e.touches[0];
-                const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+            console.log('Loading user data...');
+            try {
+                // Load medicines from Firestore
+                const medicinesSnapshot = await db.collection('medicines')
+                    .where('userId', '==', app.user.uid)
+                    .orderBy('createdAt', 'desc')
+                    .get();
                 
-                if (elementBelow && elementBelow.classList.contains('image-item') && elementBelow !== draggedElement) {
-                    swapElements(draggedElement, elementBelow);
-                }
+                app.medicines = [];
+                medicinesSnapshot.forEach(doc => {
+                    app.medicines.push({ id: doc.id, ...doc.data() });
+                });
+                
+                console.log('Medicines loaded:', app.medicines.length);
+                updateDashboard();
+            } catch (error) {
+                console.error('Error loading user data:', error);
+                showNotification('Error loading data: ' + error.message, 'error');
             }
         }
 
-        function handleTouchDragEnd(e) {
-            if (!draggedElement) return;
-            
-            // Clear long press timer
-            clearTimeout(longPressTimer);
-            
-            // If it was a long press, update the order
-            if (isLongPress) {
-                updateImageOrder();
-            }
-            
-            draggedElement.classList.remove('long-press');
-            draggedElement = null;
-            isLongPress = false;
-        }
-
-        function swapElements(elem1, elem2) {
-            const parent = elem1.parentNode;
-            const sibling = elem1.nextSibling === elem2 ? elem1 : elem1.nextSibling;
-            
-            parent.insertBefore(elem1, elem2);
-            parent.insertBefore(elem2, sibling);
-        }
-
-        function updateImageOrder() {
-            const imageItems = document.querySelectorAll('.image-item');
-            const newOrder = [];
-            
-            imageItems.forEach(item => {
-                const index = parseInt(item.getAttribute('data-index'));
-                newOrder.push(uploadedImages[index]);
-            });
-            
-            uploadedImages = newOrder;
-            saveToLocalStorage();
-        }
-
-        // Rotate functionality
-        function openRotateModal(index) {
-            currentEditingImage = index;
-            const img = uploadedImages[index];
-            
-            document.getElementById('rotateImage').src = img.src;
-            document.getElementById('rotationSlider').value = img.rotation || 0;
-            updateRotationValue();
-            
-            const modal = document.getElementById('rotateModal');
-            modal.classList.add('active');
-        }
-
-        function closeRotationModal() {
-            const modal = document.getElementById('rotateModal');
-            modal.classList.remove('active');
-            currentEditingImage = null;
-        }
-
-        function updateRotationValue() {
-            const value = document.getElementById('rotationSlider').value;
-            document.getElementById('rotationValue').textContent = `${value}°`;
-            rotationAngle = parseFloat(value);
-            
-            // Apply rotation to preview image
-            const rotateImage = document.getElementById('rotateImage');
-            rotateImage.style.transform = `rotate(${value}deg)`;
-        }
-
-        function setRotation(angle) {
-            document.getElementById('rotationSlider').value = angle;
-            updateRotationValue();
-        }
-
-        function applyRotation() {
-            if (currentEditingImage !== null) {
-                const img = uploadedImages[currentEditingImage];
-                
-                // Create a canvas to rotate the image
-                const image = new Image();
-                image.onload = function() {
-                    const canvas = document.createElement('canvas');
-                    const ctx = canvas.getContext('2d');
-                    
-                    // Calculate new dimensions after rotation
-                    const angle = rotationAngle * Math.PI / 180;
-                    const sin = Math.abs(Math.sin(angle));
-                    const cos = Math.abs(Math.cos(angle));
-                    
-                    canvas.width = image.width * cos + image.height * sin;
-                    canvas.height = image.width * sin + image.height * cos;
-                    
-                    // Rotate and draw the image
-                    ctx.translate(canvas.width / 2, canvas.height / 2);
-                    ctx.rotate(angle);
-                    ctx.drawImage(image, -image.width / 2, -image.height / 2);
-                    
-                    // Update image data
-                    img.src = canvas.toDataURL('image/png');
-                    img.width = canvas.width;
-                    img.height = canvas.height;
-                    img.rotation = 0; // Reset rotation as it's now applied to the image
-                    img.edited = true;
-                    
-                    updateImageList();
-                    saveToLocalStorage();
-                    showNotification('Image rotated successfully!', 'success');
-                };
-                
-                image.src = img.src;
-            }
-            closeRotationModal();
-        }
-
-        // Crop functionality - completely rewritten with canvas
-        function openCropModal(index) {
-            currentEditingImage = index;
-            const img = uploadedImages[index];
-            
-            // Store original image source
-            originalImageSrc = img.src;
-            
-            // Initialize canvas
-            cropCanvas = document.getElementById('cropCanvas');
-            cropCtx = cropCanvas.getContext('2d');
-            
-            // Load image to canvas
-            cropImage = new Image();
-            cropImage.onload = function() {
-                // Set canvas dimensions
-                const maxWidth = 600;
-                const maxHeight = 400;
-                let width = cropImage.width;
-                let height = cropImage.height;
-                
-                // Scale down if too large
-                if (width > maxWidth || height > maxHeight) {
-                    const ratio = Math.min(maxWidth / width, maxHeight / height);
-                    width *= ratio;
-                    height *= ratio;
-                }
-                
-                cropCanvas.width = width;
-                cropCanvas.height = height;
-                
-                // Draw image on canvas
-                cropCtx.drawImage(cropImage, 0, 0, width, height);
-                
-                // Initialize crop functionality
-                initializeCrop();
-                
-                // Show modal
-                const modal = document.getElementById('cropModal');
-                modal.classList.add('active');
-            };
-            
-            cropImage.src = img.src;
-        }
-
-        function closeCropModal() {
-            const modal = document.getElementById('cropModal');
-            modal.classList.remove('active');
-            currentEditingImage = null;
-            cropData = null;
-            originalImageSrc = null;
-            
-            // Clean up event listeners
-            if (cropCanvas) {
-                cropCanvas.removeEventListener('mousedown', startCrop);
-                cropCanvas.removeEventListener('touchstart', startCropTouch);
-                document.removeEventListener('mousemove', updateCrop);
-                document.removeEventListener('touchmove', updateCropTouch);
-                document.removeEventListener('mouseup', endCrop);
-                document.removeEventListener('touchend', endCrop);
-            }
-            
-            // Reset crop box
-            const cropBox = document.getElementById('cropBox');
-            cropBox.style.display = 'none';
-        }
-
-        function initializeCrop() {
-            // Reset crop box
-            const cropBox = document.getElementById('cropBox');
-            cropBox.style.display = 'none';
-            cropData = null;
-            
-            // Add event listeners for both mouse and touch
-            cropCanvas.addEventListener('mousedown', startCrop);
-            cropCanvas.addEventListener('touchstart', startCropTouch, { passive: false });
-            document.addEventListener('mousemove', updateCrop);
-            document.addEventListener('touchmove', updateCropTouch, { passive: false });
-            document.addEventListener('mouseup', endCrop);
-            document.addEventListener('touchend', endCrop);
-            
-            // Add event listeners to crop handles
-            const cropHandles = document.querySelectorAll('.crop-handle');
-            cropHandles.forEach(handle => {
-                handle.addEventListener('mousedown', startCropResize);
-                handle.addEventListener('touchstart', startCropResizeTouch, { passive: false });
-            });
-        }
-
-        function startCrop(e) {
-            e.preventDefault();
-            const rect = cropCanvas.getBoundingClientRect();
-            
-            cropData = {
-                startX: e.clientX - rect.left,
-                startY: e.clientY - rect.top,
-                endX: e.clientX - rect.left,
-                endY: e.clientY - rect.top
-            };
-            
-            isDragging = true;
-            updateCropBox();
-        }
-
-        function startCropTouch(e) {
-            e.preventDefault();
-            const touch = e.touches[0];
-            const rect = cropCanvas.getBoundingClientRect();
-            
-            cropData = {
-                startX: touch.clientX - rect.left,
-                startY: touch.clientY - rect.top,
-                endX: touch.clientX - rect.left,
-                endY: touch.clientY - rect.top
-            };
-            
-            isDragging = true;
-            updateCropBox();
-        }
-
-        function updateCrop(e) {
-            if (!isDragging && !isResizing) return;
-            
-            const rect = cropCanvas.getBoundingClientRect();
-            
-            if (isDragging) {
-                cropData.endX = e.clientX - rect.left;
-                cropData.endY = e.clientY - rect.top;
-            } else if (isResizing) {
-                // Handle resize based on which handle is being dragged
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-                
-                switch (resizeHandle) {
-                    case 'nw':
-                        cropData.startX = x;
-                        cropData.startY = y;
-                        break;
-                    case 'ne':
-                        cropData.endX = x;
-                        cropData.startY = y;
-                        break;
-                    case 'sw':
-                        cropData.startX = x;
-                        cropData.endY = y;
-                        break;
-                    case 'se':
-                        cropData.endX = x;
-                        cropData.endY = y;
-                        break;
-                    case 'n':
-                        cropData.startY = y;
-                        break;
-                    case 's':
-                        cropData.endY = y;
-                        break;
-                    case 'w':
-                        cropData.startX = x;
-                        break;
-                    case 'e':
-                        cropData.endX = x;
-                        break;
-                }
-            }
-            
-            updateCropBox();
-        }
-
-        function updateCropTouch(e) {
-            if (!isDragging && !isResizing) return;
-            
-            e.preventDefault();
-            const touch = e.touches[0];
-            const rect = cropCanvas.getBoundingClientRect();
-            
-            if (isDragging) {
-                cropData.endX = touch.clientX - rect.left;
-                cropData.endY = touch.clientY - rect.top;
-            } else if (isResizing) {
-                // Handle resize based on which handle is being dragged
-                const x = touch.clientX - rect.left;
-                const y = touch.clientY - rect.top;
-                
-                switch (resizeHandle) {
-                    case 'nw':
-                        cropData.startX = x;
-                        cropData.startY = y;
-                        break;
-                    case 'ne':
-                        cropData.endX = x;
-                        cropData.startY = y;
-                        break;
-                    case 'sw':
-                        cropData.startX = x;
-                        cropData.endY = y;
-                        break;
-                    case 'se':
-                        cropData.endX = x;
-                        cropData.endY = y;
-                        break;
-                    case 'n':
-                        cropData.startY = y;
-                        break;
-                    case 's':
-                        cropData.endY = y;
-                        break;
-                    case 'w':
-                        cropData.startX = x;
-                        break;
-                    case 'e':
-                        cropData.endX = x;
-                        break;
-                }
-            }
-            
-            updateCropBox();
-        }
-
-        function endCrop() {
-            isDragging = false;
-            isResizing = false;
-            resizeHandle = null;
-        }
-
-        function updateCropBox() {
-            if (!cropData) return;
-            
-            const cropBox = document.getElementById('cropBox');
-            
-            const left = Math.min(cropData.startX, cropData.endX);
-            const top = Math.min(cropData.startY, cropData.endY);
-            const width = Math.abs(cropData.endX - cropData.startX);
-            const height = Math.abs(cropData.endY - cropData.startY);
-            
-            cropBox.style.display = 'block';
-            cropBox.style.left = `${left}px`;
-            cropBox.style.top = `${top}px`;
-            cropBox.style.width = `${width}px`;
-            cropBox.style.height = `${height}px`;
-        }
-
-        function startCropResize(e) {
-            e.stopPropagation();
-            const handle = e.target;
-            resizeHandle = handle.className.split(' ')[1];
-            isResizing = true;
-        }
-
-        function startCropResizeTouch(e) {
-            e.stopPropagation();
-            const handle = e.target;
-            resizeHandle = handle.className.split(' ')[1];
-            isResizing = true;
-        }
-
-        function applyCrop() {
-            if (currentEditingImage !== null && cropData) {
-                const img = uploadedImages[currentEditingImage];
-                
-                // Calculate crop dimensions
-                const cropX = Math.min(cropData.startX, cropData.endX);
-                const cropY = Math.min(cropData.startY, cropData.endY);
-                const cropWidth = Math.abs(cropData.endX - cropData.startX);
-                const cropHeight = Math.abs(cropData.endY - cropData.startY);
-                
-                // Calculate scale factor between canvas and original image
-                const scaleX = cropImage.width / cropCanvas.width;
-                const scaleY = cropImage.height / cropCanvas.height;
-                
-                // Create a new canvas for the cropped image
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-                
-                // Set canvas size to cropped dimensions
-                canvas.width = cropWidth * scaleX;
-                canvas.height = cropHeight * scaleY;
-                
-                // Draw the cropped portion of the image
-                ctx.drawImage(
-                    cropImage,
-                    cropX * scaleX, cropY * scaleY, cropWidth * scaleX, cropHeight * scaleY,
-                    0, 0, canvas.width, canvas.height
-                );
-                
-                // Update image data
-                img.src = canvas.toDataURL('image/png');
-                img.width = canvas.width;
-                img.height = canvas.height;
-                img.crop = null;
-                img.edited = true;
-                
-                updateImageList();
-                saveToLocalStorage();
-                showNotification('Image cropped successfully!', 'success');
-            }
-            
-            closeCropModal();
-        }
-
-        // Settings updates
-        function updateMarginValue() {
-            const value = document.getElementById('margin').value;
-            document.getElementById('marginValue').textContent = `${value}mm`;
-        }
-
-        function updateQualityValue() {
-            const value = document.getElementById('quality').value;
-            document.getElementById('qualityValue').textContent = `${Math.round(value * 100)}%`;
-        }
-
-        function toggleWatermark() {
-            const watermarkText = document.getElementById('watermarkText');
-            if (document.getElementById('addWatermark').checked) {
-                watermarkText.classList.remove('hidden');
-            } else {
-                watermarkText.classList.add('hidden');
-            }
-        }
-
-        // PDF conversion
-        async function convertToPDF() {
-            if (uploadedImages.length === 0) {
-                showNotification('Please upload at least one image', 'error');
+        // Login Function
+        async function login() {
+            if (!app.firebaseInitialized) {
+                showNotification('Firebase is not configured', 'error');
                 return;
             }
             
-            showLoading(true);
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            console.log('Attempting login with:', email);
             
             try {
-                const { jsPDF } = window.jspdf;
-                const pageSize = document.getElementById('pageSize').value;
-                const orientation = document.querySelector('input[name="orientation"]:checked').value;
-                const margin = parseInt(document.getElementById('margin').value);
-                const quality = parseFloat(document.getElementById('quality').value);
-                const addWatermark = document.getElementById('addWatermark').checked;
-                const watermarkText = document.getElementById('watermarkText').value;
+                showNotification('Signing in...', 'info');
+                await auth.signInWithEmailAndPassword(email, password);
+                showNotification('Login successful!', 'success');
+            } catch (error) {
+                console.error('Login error:', error);
+                showNotification('Login failed: ' + error.message, 'error');
+            }
+        }
+
+        // Google Login
+        async function googleLogin() {
+            if (!app.firebaseInitialized) {
+                showNotification('Firebase is not configured', 'error');
+                return;
+            }
+            
+            console.log('Attempting Google login');
+            try {
+                showNotification('Signing in with Google...', 'info');
+                const provider = new firebase.auth.GoogleAuthProvider();
+                await auth.signInWithPopup(provider);
+                showNotification('Login successful!', 'success');
+            } catch (error) {
+                console.error('Google login error:', error);
+                showNotification('Google login failed: ' + error.message, 'error');
+            }
+        }
+
+        // Logout Function
+        async function logout() {
+            if (!app.firebaseInitialized) return;
+            
+            console.log('Attempting logout');
+            try {
+                await auth.signOut();
+                showNotification('Logged out successfully', 'info');
+            } catch (error) {
+                console.error('Logout error:', error);
+                showNotification('Logout failed: ' + error.message, 'error');
+            }
+        }
+
+        // Add Medicine Function
+        async function addMedicine() {
+            if (!app.firebaseInitialized) {
+                showNotification('Firebase is not configured', 'error');
+                return;
+            }
+            
+            const medicineData = {
+                name: document.getElementById('medicineName').value,
+                brand: document.getElementById('medicineBrand').value,
+                category: document.getElementById('medicineCategory').value,
+                quantity: parseInt(document.getElementById('medicineQuantity').value) || 0,
+                batch: document.getElementById('medicineBatch').value,
+                mfgDate: document.getElementById('medicineMfg').value,
+                expDate: document.getElementById('medicineExp').value,
+                location: document.getElementById('medicineLocation').value,
+                notes: document.getElementById('medicineNotes').value,
+                userId: app.user.uid,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
+            console.log('Adding medicine:', medicineData);
+            
+            try {
+                showNotification('Adding medicine...', 'info');
+                const docRef = await db.collection('medicines').add(medicineData);
                 
-                // Create PDF
-                pdfDoc = new jsPDF({
-                    orientation: orientation,
-                    unit: 'mm',
-                    format: pageSize
-                });
+                // Add to local state
+                app.medicines.unshift({ id: docRef.id, ...medicineData });
                 
-                const pageWidth = pdfDoc.internal.pageSize.getWidth();
-                const pageHeight = pdfDoc.internal.pageSize.getHeight();
-                const usableWidth = pageWidth - (margin * 2);
-                const usableHeight = pageHeight - (margin * 2);
+                // Reset form
+                document.getElementById('addMedicineForm').reset();
                 
-                // Process each image
-                for (let i = 0; i < uploadedImages.length; i++) {
-                    if (i > 0) {
-                        pdfDoc.addPage();
-                    }
-                    
-                    const img = uploadedImages[i];
-                    
-                    // Calculate dimensions for PDF
-                    const imgAspect = img.width / img.height;
-                    const pageAspect = usableWidth / usableHeight;
-                    
-                    let imgWidth, imgHeight;
-                    
-                    if (imgAspect > pageAspect) {
-                        imgWidth = usableWidth;
-                        imgHeight = usableWidth / imgAspect;
-                    } else {
-                        imgHeight = usableHeight;
-                        imgWidth = usableHeight * imgAspect;
-                    }
-                    
-                    const x = (pageWidth - imgWidth) / 2;
-                    const y = (pageHeight - imgHeight) / 2;
-                    
-                    // Add image to PDF
-                    pdfDoc.addImage(img.src, 'JPEG', x, y, imgWidth, imgHeight);
-                    
-                    // Add watermark if needed
-                    if (addWatermark && watermarkText) {
-                        pdfDoc.setTextColor(200, 200, 200);
-                        pdfDoc.setFontSize(20);
-                        pdfDoc.text(watermarkText, pageWidth / 2, pageHeight - 20, { align: 'center' });
-                    }
+                showNotification('Medicine added successfully!', 'success');
+                showPage('dashboard');
+            } catch (error) {
+                console.error('Add medicine error:', error);
+                showNotification('Error adding medicine: ' + error.message, 'error');
+            }
+        }
+
+        // Update Dashboard
+        function updateDashboard() {
+            console.log('Updating dashboard with', app.medicines.length, 'medicines');
+            
+            const stats = calculateStats();
+            
+            document.getElementById('totalMedicines').textContent = stats.total;
+            document.getElementById('expiringSoon').textContent = stats.expiringSoon;
+            document.getElementById('expiredCount').textContent = stats.expired;
+            document.getElementById('lowStockCount').textContent = stats.lowStock;
+            
+            // Update recent medicines table
+            updateRecentMedicinesTable();
+        }
+
+        // Calculate Statistics
+        function calculateStats() {
+            const today = new Date();
+            const thirtyDaysFromNow = new Date();
+            thirtyDaysFromNow.setDate(today.getDate() + 30);
+            
+            const stats = {
+                total: app.medicines.length,
+                expiringSoon: 0,
+                expired: 0,
+                lowStock: 0
+            };
+            
+            app.medicines.forEach(medicine => {
+                const expDate = new Date(medicine.expDate);
+                const diffTime = expDate - today;
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                
+                if (diffDays < 0) {
+                    stats.expired++;
+                } else if (diffDays <= 30) {
+                    stats.expiringSoon++;
                 }
                 
-                // Show preview
-                showPreview();
-                
-                // Show download section
-                document.getElementById('downloadSection').classList.remove('hidden');
-                
-                showNotification('PDF created successfully!', 'success');
-            } catch (error) {
-                console.error('Error creating PDF:', error);
-                showNotification('Error creating PDF. Please try again.', 'error');
-            } finally {
-                showLoading(false);
-            }
-        }
-
-        // Preview functionality using PDF.js
-        async function showPreview() {
-            if (!pdfDoc) return;
-            
-            const previewContent = document.getElementById('previewContent');
-            const previewNav = document.getElementById('previewNav');
-            
-            try {
-                // Get PDF as array buffer
-                const pdfArrayBuffer = pdfDoc.output('arraybuffer');
-                
-                // Load PDF with PDF.js
-                const pdf = await pdfjsLib.getDocument({ data: pdfArrayBuffer }).promise;
-                
-                // Create canvas for rendering
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-                canvas.id = 'pdfCanvas';
-                
-                // Render first page
-                const page = await pdf.getPage(1);
-                const viewport = page.getViewport({ scale: 1.5 });
-                
-                canvas.height = viewport.height;
-                canvas.width = viewport.width;
-                
-                const renderContext = {
-                    canvasContext: ctx,
-                    viewport: viewport
-                };
-                
-                await page.render(renderContext).promise;
-                
-                // Clear preview content and add canvas
-                previewContent.innerHTML = '';
-                previewContent.appendChild(canvas);
-                
-                // Create navigation dots if more than one page
-                if (pdf.numPages > 1) {
-                    previewNav.innerHTML = '';
-                    for (let i = 1; i <= pdf.numPages; i++) {
-                        const dot = document.createElement('div');
-                        dot.className = `preview-dot ${i === 1 ? 'active' : ''}`;
-                        dot.addEventListener('click', () => showPage(pdf, i, canvas));
-                        previewNav.appendChild(dot);
-                    }
-                    previewNav.classList.remove('hidden');
+                if (medicine.quantity < 10) {
+                    stats.lowStock++;
                 }
-            } catch (error) {
-                console.error('Error showing preview:', error);
-                previewContent.innerHTML = `
-                    <div class="text-center text-red-400">
-                        <i class="fas fa-exclamation-triangle text-6xl mb-4"></i>
-                        <p>Error loading PDF preview</p>
-                        <p class="text-sm mt-2">Please try again</p>
-                    </div>
-                `;
-            }
-        }
-
-        // Show specific page
-        async function showPage(pdf, pageNum, canvas) {
-            try {
-                const page = await pdf.getPage(pageNum);
-                const viewport = page.getViewport({ scale: 1.5 });
-                
-                const ctx = canvas.getContext('2d');
-                canvas.height = viewport.height;
-                canvas.width = viewport.width;
-                
-                const renderContext = {
-                    canvasContext: ctx,
-                    viewport: viewport
-                };
-                
-                await page.render(renderContext).promise;
-                
-                // Update active dot
-                const dots = document.querySelectorAll('.preview-dot');
-                dots.forEach((dot, index) => {
-                    dot.classList.toggle('active', index + 1 === pageNum);
-                });
-            } catch (error) {
-                console.error('Error showing page:', error);
-            }
-        }
-
-        // Download functionality
-        function downloadPDF() {
-            if (!pdfDoc) return;
-            
-            const fileName = document.getElementById('fileName').value || 'converted-document';
-            pdfDoc.save(`${fileName}.pdf`);
-            
-            // Save to history
-            saveToHistory(fileName);
-            
-            showNotification('PDF downloaded successfully!', 'success');
-        }
-
-        // Clear all
-        function clearAll() {
-            uploadedImages = [];
-            updateImageList();
-            pdfDoc = null;
-            document.getElementById('downloadSection').classList.add('hidden');
-            document.getElementById('previewContent').innerHTML = `
-                <div class="text-center text-gray-400">
-                    <i class="fas fa-file-pdf text-6xl mb-4"></i>
-                    <p>PDF preview will appear here</p>
-                    <p class="text-sm mt-2">Convert images to see preview</p>
-                </div>
-            `;
-            document.getElementById('previewNav').classList.add('hidden');
-            saveToLocalStorage();
-        }
-
-        // Local storage
-        function saveToLocalStorage() {
-            localStorage.setItem('uploadedImages', JSON.stringify(uploadedImages.map(img => ({
-                id: img.id,
-                name: img.name,
-                src: img.src,
-                width: img.width,
-                height: img.height,
-                rotation: img.rotation,
-                crop: img.crop,
-                edited: img.edited
-            }))));
-        }
-
-        function loadFromLocalStorage() {
-            const savedImages = localStorage.getItem('uploadedImages');
-            if (savedImages) {
-                uploadedImages = JSON.parse(savedImages);
-                updateImageList();
-            }
-            
-            const savedTheme = localStorage.getItem('theme');
-            if (savedTheme === 'dark') {
-                toggleTheme();
-            }
-        }
-
-        function saveToHistory(fileName) {
-            let history = JSON.parse(localStorage.getItem('conversionHistory') || '[]');
-            history.unshift({
-                fileName: fileName,
-                date: new Date().toISOString(),
-                imageCount: uploadedImages.length
             });
             
-            // Keep only last 10 conversions
-            history = history.slice(0, 10);
-            
-            localStorage.setItem('conversionHistory', JSON.stringify(history));
+            return stats;
         }
 
-        // Utility functions
-        function showLoading(show) {
-            const overlay = document.getElementById('loadingOverlay');
-            if (show) {
-                overlay.classList.remove('hidden');
+        // Update Recent Medicines Table
+        function updateRecentMedicinesTable() {
+            const tbody = document.getElementById('recentMedicinesTable');
+            tbody.innerHTML = '';
+            
+            if (app.medicines.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="px-6 py-4 text-center text-gray-500">
+                            No medicines added yet. Click "Add Medicine" to get started.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            const recentMedicines = app.medicines.slice(0, 5);
+            recentMedicines.forEach(medicine => {
+                const daysUntilExpiry = getDaysUntilExpiry(medicine.expDate);
+                const status = getExpiryStatus(daysUntilExpiry);
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">${medicine.name}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-500">${medicine.brand || '-'}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-500">${medicine.quantity || 0}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-500">${medicine.expDate || '-'}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="badge-modern ${status.class}">${status.text}</span>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Helper Functions
+        function getDaysUntilExpiry(expDate) {
+            if (!expDate) return 999;
+            const today = new Date();
+            const expiry = new Date(expDate);
+            const diffTime = expiry - today;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            return diffDays;
+        }
+
+        function getExpiryStatus(days) {
+            if (days < 0) {
+                return { text: 'Expired', class: 'bg-red-100 text-red-800' };
+            } else if (days <= 30) {
+                return { text: `${days} days`, class: 'bg-yellow-100 text-yellow-800' };
             } else {
-                overlay.classList.add('hidden');
+                return { text: 'Valid', class: 'bg-green-100 text-green-800' };
             }
         }
 
-        function showNotification(message, type) {
-            // Create notification element
+        function updateUserInterface() {
+            if (app.user) {
+                const displayName = app.user.displayName || app.user.email.split('@')[0];
+                document.getElementById('userName').textContent = displayName;
+                document.getElementById('userEmail').textContent = app.user.email;
+                document.getElementById('dashboardUserName').textContent = displayName;
+            }
+        }
+
+        function showPage(page) {
+            console.log('Showing page:', page);
+            
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(p => {
+                p.classList.remove('active');
+            });
+            
+            // Show selected page
+            const pageElement = document.getElementById(page + 'Page');
+            if (pageElement) {
+                pageElement.classList.add('active');
+            }
+            
+            // Update sidebar
+            document.querySelectorAll('.sidebar-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            app.currentPage = page;
+        }
+
+        function showNotification(message, type = 'info') {
+            console.log('Notification:', message, type);
+            
+            const container = document.getElementById('notificationContainer');
             const notification = document.createElement('div');
-            notification.className = `fixed top-4 right-4 p-4 rounded-lg glass text-white z-50 fade-in ${
-                type === 'error' ? 'bg-red-500/20' : 'bg-green-500/20'
-            }`;
+            
+            const bgColor = type === 'success' ? 'bg-green-500' : 
+                           type === 'error' ? 'bg-red-500' : 
+                           type === 'warning' ? 'bg-yellow-500' : 'bg-blue-500';
+            
+            notification.className = `${bgColor} text-white px-6 py-4 rounded-xl shadow-lg mb-4 slide-in`;
             notification.innerHTML = `
-                <div class="flex items-center gap-2">
-                    <i class="fas ${type === 'error' ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i>
+                <div class="flex items-center">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'} mr-3"></i>
                     <span>${message}</span>
                 </div>
             `;
             
-            document.body.appendChild(notification);
+            container.appendChild(notification);
             
-            // Remove after 3 seconds
             setTimeout(() => {
                 notification.remove();
             }, 3000);
         }
 
-        // Keyboard shortcuts
-        document.addEventListener('keydown', (e) => {
-            // Ctrl/Cmd + O to open file dialog
-            if ((e.ctrlKey || e.metaKey) && e.key === 'o') {
-                e.preventDefault();
-                document.getElementById('fileInput').click();
-            }
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            const icon = event.target;
             
-            // Ctrl/Cmd + Enter to convert
-            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-                e.preventDefault();
-                convertToPDF();
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
             }
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+        }
+
+        function toggleUserMenu() {
+            document.getElementById('userMenu').classList.toggle('hidden');
+        }
+
+        function showSignup() {
+            showNotification('Signup functionality would be implemented here', 'info');
+        }
+
+        // Setup Event Listeners
+        function setupEventListeners() {
+            console.log('Setting up event listeners');
             
-            // Escape to close modals
-            if (e.key === 'Escape') {
-                closeRotationModal();
-                closeCropModal();
+            // Login form
+            const loginForm = document.getElementById('loginForm');
+            if (loginForm) {
+                loginForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    login();
+                });
             }
-        });
+
+            // Add medicine form
+            const addMedicineForm = document.getElementById('addMedicineForm');
+            if (addMedicineForm) {
+                addMedicineForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    addMedicine();
+                });
+            }
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('#userMenu') && !e.target.closest('#user-dropdown-btn')) {
+                    const userMenu = document.getElementById('userMenu');
+                    if (userMenu) {
+                        userMenu.classList.add('hidden');
+                    }
+                }
+            });
+        }
     </script>
 </body>
 </html>
